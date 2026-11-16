@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-16",
+  "project": "GRAMO_APP.xcodeproj",
+  "scheme": "GRAMO_APP",
+  "targets": [
+    "GRAMO_APP",
+    "GRAMO_APPTests",
+    "GRAMO_APPUITests"
+  ],
+  "bundle_id": "com.kanglaide.zhiweishao",
+  "signing_unchanged": true,
+  "git_base": "ddeb5c4",
+  "test_device": "iPhone 16 / iOS 18.5 Simulator",
+  "unit_tests": 31,
+  "ui_tests": 6,
+  "test_result": "passed",
+  "release_simulator_build": "passed",
+  "simulator_launcher": "passed",
+  "source_sha256": {
+    "GRAMO_APP.xcodeproj/project.pbxproj": "81d00835c85397dcf0dc4af85dcc0d38c1dc0eead631e6dfe7b55cbb4b7f20b2",
+    "GRAMO_APP.xcodeproj/xcshareddata/xcschemes/GRAMO_APP.xcscheme": "2ff6be196ffb0efa2150db6cb099578fa498311001c6c5001f5761958b60058a",
+    "GRAMO_APP/GRAMO_APPApp.swift": "63530164856def607043fdd4bc986c73d64e4afcfdc41170e8ddefc472d6913c",
+    "tools/run_simulator_demo.sh": "976a1064bdd368d6a979e8b4475a691aef58a18848ef1252620d57432f6d3da6",
+    "README.md": "0fb8aff96e3bbdaa3cf3c2ef6dd5797c3d38e68cccebbaf837dd9c2afdccd368"
+  },
+  "screenshots_sha256": {
+    "docs/images/meal-en.png": "a43deebf12bb6c26e57882d5b9cfdacf4e3e21618c3542e62cc2e3d91d059907",
+    "docs/images/home-en.png": "2b73700dff61e66805947fd0f0932dd54b0f94050b3bea194eaa3308135dda80",
+    "docs/images/profile-en.png": "5088f8334d5252b5e2b2fcd724d7b85d51f5aebece7acee77bdf6d0abfca59eb"
+  },
+  "local_log_sha256": {
+    "release.log": "99090e19d5f92dcc5a904c25ad50e73a4d8412afc372af2f4a095331a5aa7524",
+    "demo-launch.log": "6041768a1f6e387233a739fc401c6865e6413623c2479a7aa85fc4b2305e0511",
+    "tests.log": "88f1bc18326cbcdc1d794a73822b3f20cd82f10314e65ec71694efd1e2300365",
+    "project-list.log": "2184777b69fdb9bee8dbb2d94db2d540faf3d2be4b7c3082ea04d3e7ca0eb98f"
+  }
+}

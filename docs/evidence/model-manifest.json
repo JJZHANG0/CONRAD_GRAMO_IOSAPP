@@ -1,0 +1,30 @@
+{
+  "repo": "Albertbeta123/resnet-50-chinese-food",
+  "revision": "1ce5801e5905f15de1c4e55c89ef2a8cd6d6a97c",
+  "sha256": {
+    "model.safetensors": "301c5262348a25beeb782d11cbd083dfad8d478f92672ef5a237b4f557d79849",
+    "config.json": "19cc85be4edd124800b69b04c2f882314327b91a079ebbd4f1d6d3ac31f6dd7b",
+    "preprocessor_config.json": "9ef34d18dbf7909143a91f05ad23457180fcfed05034bf94843f300e32a9b968",
+    "README.md": "f7e94314369f63b1741f44e633c5d42ab6224df891d58c2e96480bd52c214d07"
+  },
+  "dependencies": {
+    "torch": "2.7.0",
+    "transformers": "4.51.3",
+    "coremltools": "8.3.0",
+    "safetensors": "0.5.3",
+    "Pillow": "11.2.1",
+    "numpy": "1.26.4",
+    "huggingface-hub": "0.30.2"
+  },
+  "platform": "macOS-27.2.1-arm64-arm-64bit",
+  "license": "Model card: Apache-2.0; training data rights not cleared; evaluation only",
+  "normalization": "Inside model only: (RGB / 255 - mean) / std",
+  "preprocess": "EXIF transpose, RGB, PIL bicubic shortest edge 256, center crop 224",
+  "minimum_ios": "18",
+  "parity": "passed",
+  "output_sha256": {
+    "ChineseFood.mlpackage/Manifest.json": "6d4bede96773faa94c0bba1f4e490dbb540e9859ed0f2954a739dc57ca1992f3",
+    "ChineseFood.mlpackage/Data/com.apple.CoreML/model.mlmodel": "23ff906e98f8983bdeb467001a873c686c743e957d248c57a712b766be423544",
+    "ChineseFood.mlpackage/Data/com.apple.CoreML/weights/weight.bin": "0d7e3ecc9db00dcb3762a296e8974f8ff66cdb9e6a52c71778489926856bb5de"
+  }
+}

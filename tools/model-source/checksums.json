@@ -1,0 +1,6 @@
+{
+  "model.safetensors": "301c5262348a25beeb782d11cbd083dfad8d478f92672ef5a237b4f557d79849",
+  "config.json": "19cc85be4edd124800b69b04c2f882314327b91a079ebbd4f1d6d3ac31f6dd7b",
+  "preprocessor_config.json": "9ef34d18dbf7909143a91f05ad23457180fcfed05034bf94843f300e32a9b968",
+  "README.md": "f7e94314369f63b1741f44e633c5d42ab6224df891d58c2e96480bd52c214d07"
+}

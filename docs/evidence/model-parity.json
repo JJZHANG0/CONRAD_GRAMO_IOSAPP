@@ -1,0 +1,82 @@
+[
+  {
+    "image": "artifacts/evaluation/mapo-doufu.jpg",
+    "sha256": "95294886efd3fdfbab4b467eaf8c1d9a1faf55d946f7fdf44a3a5aca7c35455c",
+    "pytorch": [
+      {
+        "id": 0,
+        "label": "Mapo Tofu",
+        "score": 0.6532090306282043
+      },
+      {
+        "id": 38,
+        "label": "Oyster mushroom",
+        "score": 0.053041260689496994
+      },
+      {
+        "id": 53,
+        "label": "Steamed egg custard",
+        "score": 0.017694765701889992
+      }
+    ],
+    "coreml": [
+      {
+        "id": 0,
+        "label": "Mapo Tofu",
+        "score": 0.6532112956047058
+      },
+      {
+        "id": 38,
+        "label": "Oyster mushroom",
+        "score": 0.0530405268073082
+      },
+      {
+        "id": 53,
+        "label": "Steamed egg custard",
+        "score": 0.0176947470754385
+      }
+    ],
+    "max_score_difference": 2.2649765014648438e-06,
+    "same_top3": true
+  },
+  {
+    "image": "artifacts/evaluation/restaurant-nonfood.jpg",
+    "sha256": "86e34a8b55b6e0cc5aaa599de513169af4361fad5133d295bc6271b57dfa861c",
+    "pytorch": [
+      {
+        "id": 103,
+        "label": "Lamb shashlik",
+        "score": 0.11827446520328522
+      },
+      {
+        "id": 107,
+        "label": "grilled fish",
+        "score": 0.10299357771873474
+      },
+      {
+        "id": 11,
+        "label": "Yu-Shiang Eggplant",
+        "score": 0.04977988824248314
+      }
+    ],
+    "coreml": [
+      {
+        "id": 103,
+        "label": "Lamb shashlik",
+        "score": 0.11827445030212402
+      },
+      {
+        "id": 107,
+        "label": "grilled fish",
+        "score": 0.10299348086118698
+      },
+      {
+        "id": 11,
+        "label": "Yu-Shiang Eggplant",
+        "score": 0.04977969080209732
+      }
+    ],
+    "max_score_difference": 2.60770320892334e-07,
+    "same_top3": true
+  }
+]

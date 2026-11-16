@@ -8,3 +8,23 @@ xcuserdata/
 *.pem
 *.p12
 *.mobileprovision
+
+# Local evaluation weights, samples and build evidence; never ship automatically.
+artifacts/
+.venv-coreml/
+__pycache__/
+
+# Local scratch repositories, device dumps and private configuration.
+/tmp-*/
+*.xcresult/
+*.ipa
+*.dSYM/
+*.bin
+*.elf
+*.safetensors
+*.mlpackage/
+*.mlmodelc/
+*.p8
+*.key
+credentials*.json
+keys.h

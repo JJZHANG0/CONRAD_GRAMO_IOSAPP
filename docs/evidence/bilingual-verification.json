@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-16",
+  "scope": "Bilingual UI, simulator only",
+  "default_language": "en",
+  "switch": "Profile > Language / 我的 > 语言",
+  "tests": {
+    "full_suite": "31 unit + 6 UI passed",
+    "final_refinement": "31 unit + language UI passed",
+    "final_layout": "language UI passed; Release build passed"
+  },
+  "source_sha256": {
+    "ZhiWeiShao/Model/L10n.swift": "6bf36119d8a4f4a1f6dddd843a2801ffbe8d4a82b1d6c7396d32f28a9c6972fa",
+    "ZhiWeiShao/Model/ProductL10n.swift": "3551bd73f607098c84a0dc46a7627f2cbf42eaeacb94a59cf9bb58684bd8b7fb",
+    "ZhiWeiShao/Model/Store.swift": "6245f7a6ba7f4933eb9431feced9c05f189c6a0c1e1e22f2adaea8b4e3eb9fdb",
+    "ZhiWeiShaoTests/LocalizationTests.swift": "d3603929147b9fc7dfc8d7dcc90b731896109cd99e6d6dbe614b1af65a33d560",
+    "ZhiWeiShaoUITests/ScreenshotTests.swift": "24dfc9d3b29cff7c2a2e821ce23474fe99b15a1973dc392e1fea17cf213d0ad0",
+    "tools/run_simulator_demo.sh": "7914d72e7cf68948d0a59db8f86b4371d9d3a3659c83e42a453221579a45dd20",
+    "ZhiWeiShao/Views/ShopView.swift": "53ecea5a1963879777484205209c1f8e09911532b7b39583f83c6a3db8f08e2a",
+    "ZhiWeiShao/Views/SpoonPreview.swift": "094dcfdc04228ec8b0d92e383594b97231a5a24e8d2de9efc325041a083485a3",
+    "ZhiWeiShao/Views/ProfileView.swift": "e9854794ba99156580f86a33dedb82f1ddb24cdf6ec437f672efc2246f26bb30",
+    "ZhiWeiShao/Views/RecordsView.swift": "865bfef6a62fe2b4cc069ee72c2f6d6e7863738a9902fa76ff451005ec844949",
+    "ZhiWeiShao/Views/ProductComponents.swift": "1c4062d8909cc2419adbd6bb60231d9692bb597bd1e818144c9f25dcef8a8e7e",
+    "ZhiWeiShao/Views/RootView.swift": "ef604dc23c2a0dba5abe1adacc3868dd5e843f4831b5caa0938a24de00a0f10e",
+    "ZhiWeiShao/Views/DishPickerView.swift": "40c5adff8784ed3ac10a48014cdfe9f7e3435f6fe7a728e2b9533af649d9cb80",
+    "ZhiWeiShao/Views/DeveloperToolsView.swift": "b3f26e49ed8b288b4fe6d1a07fdf14ab130ca19b1d7e5091f4c17c687b09141d",
+    "ZhiWeiShao/Views/InsightsView.swift": "808bd49362a2e9b59c047b5fefdeea24271203cdc9570667f526f86cdbeaaaa6",
+    "ZhiWeiShao/Views/TodayView.swift": "cddc846967917eb8cbcee4314a6543ad1e4dbe7e9affe43982f62b5067888a31",
+    "ZhiWeiShao/Views/IntegrationView.swift": "ebcf42ce32706b8ea8a1b67185ca187cd71cecbfe34ff3053125c49f1ecdb070",
+    "ZhiWeiShao/Views/FlowViews.swift": "60388d8b65edbedc7277669035590fa90be0eebaf40ebcc4c6d58bbc6e8af241",
+    "ZhiWeiShao/Views/ConsumerFlows.swift": "c086efe442eaccb32b0583a2a028422d8edfd710a7d115a370fa58a30b347a39"
+  },
+  "visual_check": "Final simulation banner uses reserved top padding; final-home-en.png inspected after rebuilding and launching. No header overlap."
+}

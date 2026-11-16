@@ -1,0 +1,131 @@
+{
+  "samples": [
+    {
+      "image": "mapo-doufu.jpg",
+      "camera": "public",
+      "plate_group": "mc10-2010-11-28",
+      "split": "test",
+      "expected_id": "0",
+      "sha256": "95294886efd3fdfbab4b467eaf8c1d9a1faf55d946f7fdf44a3a5aca7c35455c",
+      "top3": [
+        {
+          "id": 0,
+          "score": 0.6532112956047058
+        },
+        {
+          "id": 38,
+          "score": 0.0530405268073082
+        },
+        {
+          "id": 53,
+          "score": 0.0176947470754385
+        }
+      ],
+      "top1_correct": true,
+      "top3_correct": true,
+      "experimental_accepted": false
+    },
+    {
+      "image": "restaurant-nonfood.jpg",
+      "camera": "public",
+      "plate_group": "suicasmo-2026-05-13",
+      "split": "test",
+      "expected_id": "",
+      "sha256": "86e34a8b55b6e0cc5aaa599de513169af4361fad5133d295bc6271b57dfa861c",
+      "top3": [
+        {
+          "id": 103,
+          "score": 0.11827445030212402
+        },
+        {
+          "id": 107,
+          "score": 0.10299348086118698
+        },
+        {
+          "id": 11,
+          "score": 0.04977969080209732
+        }
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "experimental_accepted": false
+    },
+    {
+      "image": "nomi-camera-01.jpg",
+      "camera": "spoon",
+      "plate_group": "nomi-clothing-20261115",
+      "split": "test",
+      "expected_id": "",
+      "sha256": "05570ce3c624201f38de53ccdcd1ea1d69d6705667a53f4d37948ed289c13ea7",
+      "top3": [
+        {
+          "id": 4,
+          "score": 0.33518660068511963
+        },
+        {
+          "id": 23,
+          "score": 0.07487773150205612
+        },
+        {
+          "id": 36,
+          "score": 0.06416121870279312
+        }
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "experimental_accepted": false
+    },
+    {
+      "image": "nomi-ble-camera-01.jpg",
+      "camera": "spoon",
+      "plate_group": "nomi-desk-20261115",
+      "split": "test",
+      "expected_id": "",
+      "sha256": "60ec7a02275eeeed220e7ad51facc4c9574dc2cda6720b40773e1229e0da9079",
+      "top3": [
+        {
+          "id": 53,
+          "score": 0.25397130846977234
+        },
+        {
+          "id": 32,
+          "score": 0.09792043268680573
+        },
+        {
+          "id": 4,
+          "score": 0.08025456964969635
+        }
+      ],
+      "top1_correct": false,
+      "top3_correct": false,
+      "experimental_accepted": false
+    }
+  ],
+  "cameras": {
+    "phone": {
+      "samples": 0,
+      "covered": 0,
+      "negative": 0,
+      "top1": null,
+      "top3": null,
+      "negative_false_accepts": null
+    },
+    "spoon": {
+      "samples": 2,
+      "covered": 0,
+      "negative": 2,
+      "top1": null,
+      "top3": null,
+      "negative_false_accepts": null
+    },
+    "public": {
+      "samples": 2,
+      "covered": 1,
+      "negative": 1,
+      "top1": 1.0,
+      "top3": 1.0,
+      "negative_false_accepts": null
+    }
+  },
+  "policy": "manual confirmation; no production threshold validated"
+}

@@ -1,0 +1,37 @@
+{
+  "origin": "Synthetic v1 replay built from SpoonLink.md; NOT hardware capture",
+  "device_id": "fixture-spoon-A",
+  "messages": [
+    {
+      "channel": "status",
+      "hex": "010400f1536501005291"
+    },
+    {
+      "channel": "meal",
+      "hex": "010100f15365040007000000c4"
+    },
+    {
+      "channel": "meal",
+      "hex": "01020af15365"
+    },
+    {
+      "channel": "meal",
+      "hex": "0700070000000c0001c3"
+    },
+    {
+      "channel": "meal",
+      "hex": "01020af153650700070000000c0001c3"
+    },
+    {
+      "channel": "meal",
+      "hex": "01020bf15365070007000000000001ce"
+    },
+    {
+      "channel": "meal",
+      "hex": "010314f153650600070000001400c4"
+    }
+  ],
+  "expected_meals": 1,
+  "expected_positive_bites": 0,
+  "expected_kcal": null
+}

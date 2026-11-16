@@ -1,6 +1,6 @@
 # Spoon Link
 
-This is the contract the spoon firmware implements. The iOS app parses only this framing. UUIDs are an app-side definition until the hardware confirms them. Change them in this file and in `ZhiWeiShao/Model/SpoonLink.swift` together. The Swift file is what the app uses.
+This is the original app-side proposed contract, not a verified firmware specification. UUIDs remain unconfirmed on hardware. The original Nomi v0.2 exposed a serial console; the current 0.4.1 integration uses [a separate Nomi extension](docs/nomi-protocol.md); see `docs/hardware-integration.md` for observed capabilities. Do not flash this proposed protocol over the original firmware or write to an unknown characteristic. Change this file and `ZhiWeiShao/Model/SpoonLink.swift` together only after a verified compatible implementation exists.
 
 The phone does not connect by itself. It scans, lists name and signal, and connects only after a person picks a row. Battery, the current head, and meals change only when a packet below checks out. Any other device can stay connected and is shown as not a spoon yet. That link does not create a meal or a calorie.
 
@@ -17,7 +17,7 @@ No Bluetooth background mode. The session is foreground only. The app does not c
 
 Status notifications carry battery and head. Meal notifications carry meal start, a sample, and meal end. The phone writes a sync request to the sync characteristic. The spoon answers by notifying the same meal packets again. A repeated meal id does not create a second meal.
 
-Packets may be longer than the default 20-byte ATT payload. The spoon should request a larger MTU. A truncated notify fails the length check and is ignored.
+The App buffers fragments separately for each characteristic (2 second expiry, bounded length) and can decode consecutive frames. A malformed or expired frame is discarded; this framing has no fragment sequence number or resynchronization marker.
 
 ## Frame
 
@@ -45,7 +45,7 @@ The byte count must be `9 + length`. A bad checksum, a bad length, or a bad payl
 | `0x05` | Head | Status notify | `u8` head |
 | `0x10` | Sync request | Phone writes this | empty |
 
-Sample flags: bit 0 set means this sample is a bite. Other bits are reserved and ignored. Grams are whole grams, and may be negative. There is no kilocalorie field. The app does not invent calories from weight.
+Sample flags: bit 0 set was the proposed bite flag. Under the current physical-button requirement, legacy samples are diagnostic only and do not add bites. Other bits are reserved and ignored. Grams are whole grams, and may be negative. There is no kilocalorie field. The app does not invent calories from weight.
 
 Head values: `0` none, `1` spoon, `2` fork. Any other value is rejected.
 

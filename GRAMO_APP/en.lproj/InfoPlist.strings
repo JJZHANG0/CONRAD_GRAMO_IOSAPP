@@ -1,0 +1,2 @@
+NSBluetoothAlwaysUsageDescription = "GRAMO_APP uses Bluetooth to find a utensil and record a meal. It connects only after you choose a device.";
+NSBluetoothPeripheralUsageDescription = "GRAMO_APP uses Bluetooth to find a utensil and record a meal. It connects only after you choose a device.";

@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-15",
+  "scope": "iOS Simulator only; no physical hardware acceptance",
+  "device": "iPhone 16 / iOS 18.5",
+  "simulator_id": "5890899D-CC64-42C8-BABF-C55BB06D3B87",
+  "project": "ZhiWeiShao.xcodeproj",
+  "scheme": "ZhiWeiShao",
+  "tests": {
+    "unit": {
+      "passed": 29,
+      "log": "artifacts/product-verification/unit-tests.log"
+    },
+    "ui": {
+      "passed": 5,
+      "log": "artifacts/product-verification/acceptance.log"
+    },
+    "latest_change": "Photo-loaded auto-scroll was verified manually after this UI test suite; Debug and Release rebuilt successfully."
+  },
+  "photo": {
+    "input": "artifacts/evaluation/mapo-doufu.jpg",
+    "sha256": "95294886efd3fdfbab4b467eaf8c1d9a1faf55d946f7fdf44a3a5aca7c35455c",
+    "visible_candidates": [
+      "麻婆豆腐",
+      "平菇",
+      "蒸蛋羹"
+    ],
+    "confirmed": "麻婆豆腐",
+    "record_count_before_and_after": 2,
+    "camera_source": "simulator photo library, NOT spoon camera"
+  },
+  "source_sha256": {
+    "ZhiWeiShao/Model/FoodRecognizer.swift": "3b405ac2b550c462a64bb2f7aa5b2be8f2a0229b1b9c53ad668d39fd12e70a34",
+    "ZhiWeiShao/Model/MockSpoonDevice.swift": "b0156e6a872e111319ea13ea135675f63738e02d40de9d592a6e9b72c869ca98",
+    "ZhiWeiShao/Model/SpoonRadio.swift": "36870a0d09ee7d6156105c7416c56b58665c482960727c2461088b05013925ae",
+    "ZhiWeiShao/Model/Store.swift": "635f84ffcf2f7ee493b819fe23fb717ba67374db1c52ece450121d78d0cfbc55",
+    "ZhiWeiShao/Theme.swift": "2b31007853ac882bdda64642300c06a0ed6600f8116a1d14475cb0dde48a2f72",
+    "ZhiWeiShao/Views/ConsumerFlows.swift": "d75b8566dadae2bb1dd42954dc7e2cf45b1fc66e5294bceae810561939fdc96d",
+    "ZhiWeiShao/Views/DeveloperToolsView.swift": "82b8785b612a0709b2baeacf717498b11a6918a7d0ea11fbbbca92d58e5fb595",
+    "ZhiWeiShao/Views/DishPickerView.swift": "ca901aade6d1c385b1cb69c62b52bc3fc9ad41b590d6fc74355917b24673b29b",
+    "ZhiWeiShao/Views/FlowViews.swift": "7aedce6d990521418caac35ca1229f5a1a078f96417e3e75f60270f9baaccfc0",
+    "ZhiWeiShao/Views/InsightsView.swift": "f7909d7bd12f2ae6bef9b09842343066db159187c6bd28ef153ed5c6a4ee75a0",
+    "ZhiWeiShao/Views/IntegrationView.swift": "430ac2498a59e332c3e8d82c9529f58aa06711a745cf9b4adc7a348da6f70d07",
+    "ZhiWeiShao/Views/ProductComponents.swift": "73ee4c817fb942b430fc85f13ac80ee3bb26ff6a51fdc1d56c89922b405abe17",
+    "ZhiWeiShao/Views/ProfileView.swift": "be247c36dcd331f61781648c41725633d027403f0d9f528d8d631eaa4b182ee9",
+    "ZhiWeiShao/Views/RecordsView.swift": "b1f17db67916704451d2df7a9c22861482cda915f6f39c38762cd34418e6741b",
+    "ZhiWeiShao/Views/RootView.swift": "656ad0a2b79ed83094f0570d7f773e62e41475061b8e9ed9f157c186c450cae0",
+    "ZhiWeiShao/Views/ShopView.swift": "7750df9fbc0a77bdf782b4af0eadb51703e2e603916404311244cc5edf622c18",
+    "ZhiWeiShao/Views/SpoonPreview.swift": "c8f3799f3b01c376093a292af7b7f672b79384cfff0ff99d7b28c169fb44e468",
+    "ZhiWeiShao/Views/TodayView.swift": "88d8f9cb1c8f79da2a560f7825748c73846cc41edc32d1cbf99d2e6c1550fd54",
+    "ZhiWeiShaoTests/ButtonIntegrationTests.swift": "03e2184e4c2cfa376318f99106538bcd7fe0d1f0cc0e8eb2b2122754e9c41cb3",
+    "ZhiWeiShaoTests/IntegrationTests.swift": "feedbbeaf7b32687e58fda791069fb005bb9566fedab91e6dc30d986c663279a",
+    "ZhiWeiShaoTests/MockDeviceTests.swift": "b8328881a357881eaa27cf18b5c6e78d5693fcd19c6217fa6122dfc37ec576fa",
+    "ZhiWeiShaoUITests/ScreenshotTests.swift": "2158d373da49d6a900df4ae73ac2c3b47714e3561e304cf0bb3b2b4e396f883b",
+    "tools/run_simulator_demo.sh": "174cfb285ee6a60ffe4a70f954341d48bfe4d0af36ac8ed065544cd836e2bec8"
+  },
+  "evidence_sha256": {
+    "artifacts/product-verification/acceptance.log": "93125a9ef1ee85fb67681094e36219b73cde4b388c292c693d2d6c20227bd60d",
+    "artifacts/product-verification/demo-launch.log": "d563ca4121908b9694676ce60bba1e3c9db470f30af0e467073f4302af85501c",
+    "artifacts/product-verification/unit-tests.log": "0a10ff00f951034877a3b3c758cdb7e0f9d5287bff666cea7da5d11e469e9996",
+    "artifacts/product-verification/release-build.log": "1992cac1199819931f489e17582dafe86e97705a786b1e7db86d969ad9883986"
+  }
+}

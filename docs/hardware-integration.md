@@ -1,0 +1,62 @@
+# 智味勺硬件联调证据
+
+更新：2026-11-15（Asia/Shanghai）。原工作目录 本机项目根目录；起始提交 `ddeb5c4`，起始 Git 状态为空，未重置、重排或删除历史。没有 AGENTS.md。原工程 `ZhiWeiShao.xcodeproj`，scheme/target `ZhiWeiShao`，iOS 18，SwiftUI/Core Bluetooth/UserDefaults JSON。基线 Simulator build 已通过。工程签名保持原样；真机编译通过命令行临时使用现有团队和证书。用户已完成开发证书信任。
+
+> 2026-11-16 工程更名为 `GRAMO_APP.xcodeproj`，scheme/target 为 `GRAMO_APP`。下文保留先前硬件联调时的工程名称与记录。
+
+## 当前证据分层
+
+| 链路 | 源码已确认 | 真机已验证 | 待核实 |
+|---|---|---|---|
+| 原固件/板卡 | 用户提供 nomi_main.zip；config.h、cam.h、keys.h；XIAO ESP32S3 Sense | USB查询 ESP32-S3 QFN56 rev0.2、8MB Flash、8MB OPI PSRAM；原 Nomi v0.2 日志 | 商业分发授权、完整板卡原理图 |
+| 固件恢复 | 完整8MB备份，分区表及应用校验通过；Secure Boot/Flash Encryption关闭 | app0依次更新0.3.0、0.4.0、0.4.1；每次写后hash校验通过；原boot/分区/NVS保留 | 尚未实际执行回退烧录 |
+| BLE识别/连接 | 原同事程序无BLE；新增明确定义的Nomi扩展，原App v1分支保留 | iPhone发现广播NOMI01、读能力、订阅、hello往返成功，0.3/0.4均验证 | 长时间弱信号可靠性 |
+| 勺载相机 | cam.h原接线/OV3660修正；新BLE关键帧+CRC32传输 | 原串口640×480 JPEG成功；App收到、解码并显示真实BLE JPEG；0.4前台约2秒刷新，时间连续更新 | 正常餐具姿态下能否清楚看见勺内食物；多菜实拍准确率 |
+| 实体按钮 | keys.h确认GPIO1、低电平按下；GPIO2按键蓝灯；新增短按事件、ACK/重放/去重 | 0.4实体短按产生4个唯一事件，App保存4条待确认记录；session ACK成功 | 独立计数的单次/快速双次及长按休眠唤醒仍需现场验收 |
+| 实体灯带 | config.h确认3颗WS2812，GPIO4，GRB/800kHz，亮度46；新LED命令有ID和应用ACK | BLE绿色回执成功；0.4.1更换RMT驱动，USB返回tx=true；用户明确确认两版均完全不亮 | 实体灯验收失败：需测供电、共地、GPIO4→DIN及灯珠；不能仅靠回执定位具体故障 |
+| 载荷 | 原固件无载荷采集；旧程序固定克数没有沿用 | 无 | 载荷模块型号/接线、稳定原始读数、勺叉各自去皮/砝码标定 |
+| IMU/接触 | 旧motion代码存在，但主程序明确关闭IMU；无接触传感器证据 | 原启动日志确认IMU关闭 | 模块实际在板与否、采样单位/姿态标定/接触接线 |
+| 语音 | App源代码未检出语音播报/语音入口或麦克风用途权限；新固件不包含mic/sound/voice驱动 | 新固件运行不初始化麦克风/扬声器 | 全流程人工听觉确认 |
+
+## 原始资料与引脚
+
+用户附件：`nomi_main.zip`，SHA256 `62f21e5abc248365aa3aa7aa58395bff0393b1c814a397bff7f4dd35ee8d39ca`。私有解压在 ignored `artifacts/original-firmware-source/nomi_main`。只沿用确认接线与相机驱动，不使用原云端密钥、Wi-Fi配置、固定克数或拍照即计口行为。
+
+- Camera：D0=15、D1=17、D2=18、D3=16、D4=14、D5=12、D6=11、D7=48；XCLK=10、PCLK=13、VSYNC=38、HREF=47、SCCB SDA/SCL=40/39；PWDN/RESET=-1。20MHz，VGA JPEG质量12，2帧PSRAM缓冲。实测OV3660，沿用vflip=1、brightness=1、saturation=-2。
+- 灯带：GPIO4，3颗WS2812；按键：PB01-103RFL，GPIO1接地触发、内部上拉；按键蓝灯GPIO2。新固件短按无双击合并、无3秒冷却；不沿用静音/播报/清零按键逻辑。
+- 旧OLED/IMU I2C=5/6、I2S=7/8/9、PDM=42/41，只作来源记录，新联调固件均不初始化。GPIO证据不等于这些模块真机可用。
+- ESP32-S3 GPIO1属于RTC IO，可作为EXT0唤醒。新长按约1.5秒并松手进入深睡；唤醒后验证持续按住，再等待松手，整个唤醒手势不记口。没有确认电源切断电路，不能称为彻底断电后软件开机。[Espressif睡眠与唤醒参考](https://docs.espressif.com/projects/esp-idf/en/release-v5.3/esp32s3/api-reference/system/sleep_modes.html)。
+
+## 通信与事件边界
+
+真实扩展协议见 [nomi-protocol.md](nomi-protocol.md)，构建、烧录、回退见 [firmware/README.md](../firmware/README.md)。新增特征0005控制(write/read/notify)、0006信息(read)、0007图像(notify)、0008按钮(read/notify)，共同UUID基尾为`-5B4A-4E3F-8D2C-1A0B9E8D7C6B`，服务为`6C2E0001`。这些UUID由本次固件实现，不对未知设备盲写。
+
+原App SpoonLink服务0001/状态0002/餐次0003/同步0004仅为旧草案；校验v1版本、长度、单位、XOR、分特征半包缓存与超时的逻辑保留。旧sample的bite标记没有实体短按证据，仅记录诊断，不再增加口数或摄入账。设备未知特征只读枚举，不发送猜测命令。
+
+- BLE连接、能力信息、相机画面三种状态分开。能力匹配、控制订阅及hello回执后就绪；相机必须收到、CRC通过、UIImage解码成功才显示可用。
+- 前台预览约2秒请求一张；一次只传一帧，最多200KB、App30秒超时；最新帧超过6秒或断开提示中断。不是视频流。用餐中保留最多12帧/20秒内存缓冲；按键关联最多4张短按前12秒内图片和首张短按后6秒内图片。仅作附近证据，未假定一定拍到了入口前食物。
+- 按键30ms防抖，短按松手产生`随机boot ID + 递增序号`，两次独立短按不按时间合并；长按松手只休眠。只有收到App有效用餐session才产生记口事件。最多64个未ACK事件，独立NVS命名空间保存，重连每500ms重发直到App ACK；满队列明确报错，不覆盖旧事件。异常断电/存储写失败可能影响未交付事件，日志会提示。
+- App按设备+事件ID去重，已删除记录重放不复活；校验所属餐次和时间区间。缺图、菜或克数仍保存同一条待确认口次；后续修正同一记录。没有短按的传感变化/图片不自动入账。人工补录入口明确标示。
+- 前台有限自动重连3次（2/4/6秒），重新握手后同步当前用餐和目标。锁屏、后台、离线时不承诺实时灯色。断线保留实体最后灯色，App显示未同步；长时间休眠唤醒后可在设备页重新选择NOMI01。
+
+## 食物与热量
+
+Core ML真实权重、标签、归一化、导出和同输入对比见 [model-evaluation.md](model-evaluation.md)。模型114类封闭分类，不能证明照片是食物，当前所有识别均须人工确认。开餐抓帧与连续预览分开，刷新不会覆盖正在圈选的盘面图。Top3是一个区域的备选，不是三道菜。
+
+未标定视觉面积不输出克数；无载荷不编造重量。已有稳定窗口、姿态对比及经校准视觉查表算法仅离线测试，未声称接入实体传感器。菜名/重量/营养密度/来源缺失时kcal为nil，单列待确认；完成后按克数×kcal/100g÷100计入原Meal.foods账本。新增、修正、删除、结束餐次、跨日/前台返回重算，等于目标为红，低于目标为绿。历史保留，未核实旧估算不驱动灯；首次迁移备份UserDefaults键`zhiweishao.store.v1.pre-integration-backup`。
+
+## 可追溯现场记录
+
+- 初期附近Mac只读查询和开关机广播对照未找到勺子；不能算勺子验收。后获得原源码、USB备份后才扩展固件广播NOMI01。
+- USB VID303A/PID1001，`/dev/cu.usbmodem2101`。原备份8388608字节，SHA256 `8a092564d4b53a5795a18d068bff93a0c1b1a243d2c424277cb3509ce1a8f157`；权限600/目录700，可能含旧配置，不提交或外发。
+- 原串口相机图`artifacts/evaluation/nomi-camera-01.jpg`，15077字节，SHA256 `05570ce3c624201f38de53ccdcd1ea1d69d6705667a53f4d37948ed289c13ea7`，非食物负样本。
+- 0.3 iPhone BLE图`nomi-ble-camera-01.jpg`，13614字节，CRC32 `1bf14365`，桌面非食物；实际手机显示与离线评估分开记录。
+- 0.4 iPhone真实连续图17:48:00/08/25/34连续更新；17:49设备证据显示ready=true、固件0.4.0、13934字节图、绿色应用ACK、0kcal/0待确认、目标10。记录位于`/tmp/zws-integration/nomi04-live.json`，Debug设备端`Documents/HardwareEvidence.json`；这些是软件与链路证据，不替代用户目视灯色。
+- iPhone相机曾在DeviceHub共享期间黑屏，停止共享后用户确认恢复。手机拍摄时关闭镜像；该问题不影响独立勺载相机通道。
+
+### 21:45之后的证据更新
+
+- 实体事件 `0a9fbb523f4e88ef-00000001` 至 `00000004` 已在iPhone保存为4条不同记录，每条关联4张按前图和1张按后图。没有实际称量及营养来源，因此均为待确认、今日可计入0kcal。用户没有逐次报清总按键数，此证据不代替严格“一按一口/两按两口”的现场计数验收。
+- 勺载拍摄电脑红烧肉图片，iPhone Core ML显示红烧肉约73.9%、莲藕约2.0%、花生约1.9%；为屏幕翻拍链路测试，不是真实盘面准确率或份量证据。保存样本`artifacts/evaluation/nomi-screen-pork-01.jpg`；该整帧离线结果与手机选区结果分别记录。
+- 0.4.1的GPIO4 RMT初始化和灭灯帧发送成功，绿色命令带同ID回执driver=rmt、tx=true。证据`artifacts/nomi-firmware/rmt-green.json`。用户随后明确回答“灯带仍完全不亮”，故实体灯绿转红未通过。按键蓝灯正常不代表独立WS2812灯带供电/数据正常。
+- 原源码ledEnabled=false且有3V3供电注释；本版未保留关闭开关。继续定位需要实际电气测量；目前不能断言具体损坏部件。App文案已改为“输出已回执；实际亮灯待目视确认”。
