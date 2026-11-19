@@ -1,0 +1,169 @@
+{
+  "date": "2026-11-19",
+  "scope": "Debug local evaluation; not an accuracy benchmark",
+  "simulator_before": [
+    {
+      "cpuPredictionMS": 42.64199733734131,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 8675.427079200745,
+      "productionTotalMS": [
+        8501.329064369202,
+        8570.816040039062,
+        8493.793964385986
+      ],
+      "sample": "mapo-doufu.jpg",
+      "top3": [
+        "0",
+        "38",
+        "53"
+      ]
+    },
+    {
+      "cpuPredictionMS": 30.005931854248047,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 590.8409357070923,
+      "productionTotalMS": [
+        622.5060224533081,
+        627.5910139083862,
+        619.8439598083496
+      ],
+      "sample": "nomi-screen-pork-01.jpg",
+      "top3": [
+        "77",
+        "85",
+        "11"
+      ]
+    },
+    {
+      "cpuPredictionMS": 30.64703941345215,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 18704.82301712036,
+      "productionTotalMS": [
+        18416.373014450073,
+        18386.999011039734,
+        18286.073088645935
+      ],
+      "sample": "restaurant-nonfood.jpg",
+      "top3": [
+        "103",
+        "107",
+        "11"
+      ]
+    }
+  ],
+  "simulator_after": [
+    {
+      "cpuPredictionMS": 36.28695011138916,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 996.52099609375,
+      "productionTotalMS": [
+        979.6930551528931,
+        1009.1090202331543,
+        992.2820329666138
+      ],
+      "sample": "mapo-doufu.jpg",
+      "top3": [
+        "0",
+        "38",
+        "53"
+      ],
+      "topScores": [
+        0.6404098272323608,
+        0.05569538101553917,
+        0.019093750044703484
+      ]
+    },
+    {
+      "cpuPredictionMS": 30.37703037261963,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 205.2290439605713,
+      "productionTotalMS": [
+        237.73908615112305,
+        239.03000354766846,
+        243.4840202331543
+      ],
+      "sample": "nomi-screen-pork-01.jpg",
+      "top3": [
+        "77",
+        "85",
+        "11"
+      ],
+      "topScores": [
+        0.7817524671554565,
+        0.014597566798329353,
+        0.01269102469086647
+      ]
+    },
+    {
+      "cpuPredictionMS": 30.72798252105713,
+      "maxScoreDelta": 0,
+      "preprocessingMS": 1627.3070573806763,
+      "productionTotalMS": [
+        1539.1919612884521,
+        1536.2670421600342,
+        1546.6259717941284
+      ],
+      "sample": "restaurant-nonfood.jpg",
+      "top3": [
+        "103",
+        "107",
+        "11"
+      ],
+      "topScores": [
+        0.11613018065690994,
+        0.10103444755077362,
+        0.05049949139356613
+      ]
+    }
+  ],
+  "iphone_after": [
+    {
+      "cpuPredictionMS": 14.163017272949219,
+      "maxScoreDelta": 1.0132789611816406e-06,
+      "preprocessingMS": 503.0519962310791,
+      "productionTotalMS": [
+        2177.2239208221436,
+        507.56800174713135,
+        503.1629800796509
+      ],
+      "sample": "mapo-doufu.jpg",
+      "top3": [
+        "0",
+        "38",
+        "53"
+      ]
+    },
+    {
+      "cpuPredictionMS": 7.061004638671875,
+      "maxScoreDelta": 1.7881393432617188e-07,
+      "preprocessingMS": 105.11600971221924,
+      "productionTotalMS": [
+        119.09794807434082,
+        117.83897876739502,
+        117.76101589202881
+      ],
+      "sample": "nomi-screen-pork-01.jpg",
+      "top3": [
+        "77",
+        "85",
+        "11"
+      ]
+    },
+    {
+      "cpuPredictionMS": 6.682991981506348,
+      "maxScoreDelta": 1.7136335372924805e-07,
+      "preprocessingMS": 806.0660362243652,
+      "productionTotalMS": [
+        771.1780071258545,
+        773.9230394363403,
+        769.7900533676147
+      ],
+      "sample": "restaurant-nonfood.jpg",
+      "top3": [
+        "103",
+        "107",
+        "11"
+      ]
+    }
+  ]
+}

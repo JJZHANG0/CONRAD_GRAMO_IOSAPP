@@ -3,6 +3,10 @@ import Foundation
 /// Consumer copy is separate from stored records and wire protocol strings.
 extension L10n {
     static let productEnglish: [String: String] = [
+        "开始本餐后即可短按记录": "Start a meal to enable button recording",
+        "此设备尚未支持按键记录，可先手动补记。": "Button recording is unavailable. You can add a bite manually.",
+        "正在准备按键记录，请稍候…": "Preparing button recording…",
+        "热量待完善": "Calories need details",
         "我的": "Profile",
         "记录": "History",
         "已记录": "Recorded",

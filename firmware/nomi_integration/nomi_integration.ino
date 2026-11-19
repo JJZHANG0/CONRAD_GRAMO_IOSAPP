@@ -17,7 +17,7 @@ static const char *CONTROL = "6C2E0005-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *INFO = "6C2E0006-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *IMAGE = "6C2E0007-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *EVENTS = "6C2E0008-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
-static const char *VERSION = "0.4.1-integration";
+static const char *VERSION = "0.4.2-integration";
 Cam camera;
 VerifiedRing ring;
 BLEServer *server;
@@ -25,14 +25,30 @@ BLECharacteristic *controlChar, *imageChar, *infoChar;
 BLE2902 *controlSubscription, *imageSubscription;
 BLECharacteristic *eventChar;
 BLE2902 *eventSubscription;
-ButtonGesture button;
+// Sampling has its own task: camera capture/BLE congestion cannot hide a short press.
+struct Gesture { ButtonGesture::Event action; uint32_t at; };
+QueueHandle_t gestures;
+volatile uint32_t gestureOverflow = 0;
+uint32_t shortPresses = 0, ignoredPresses = 0;
+void sampleButton(void*) {
+  ButtonGesture button;
+  TickType_t last = xTaskGetTickCount();
+  for (;;) {
+    auto action = button.update(millis(), digitalRead(1) == LOW);
+    if (action != ButtonGesture::None) {
+      Gesture gesture{action, millis()};
+      if (xQueueSend(gestures, &gesture, 0) != pdTRUE) ++gestureOverflow;
+    }
+    vTaskDelayUntil(&last, pdMS_TO_TICKS(5));
+  }
+}
 Preferences eventStorage;
 struct Bite { char event[28]; char meal[64]; int64_t at; };
 Bite pendingBites[64] = {};
 uint32_t eventSequence=0, bootA=0, bootB=0, lastEventSend=0;
 String activeMeal;
 int64_t clockEpoch=0;
-uint32_t clockMillis=0;
+uint32_t clockMillis=0, mealStartedMillis=0;
 QueueHandle_t commands;
 volatile bool linked = false;
 volatile bool advertiseAgain = false;
@@ -64,14 +80,21 @@ void sleepNow() {
   esp_deep_sleep_start();
 }
 void buttonTick() {
-  auto action=button.update(millis(),digitalRead(1)==LOW);
+  Gesture gesture;
+  if (xQueueReceive(gestures,&gesture,0)!=pdTRUE) return;
+  auto action=gesture.action;
   if (action==ButtonGesture::Long) { sleepNow(); return; }
-  if (action!=ButtonGesture::Short || activeMeal.isEmpty() || clockEpoch==0) return;
+  if (action!=ButtonGesture::Short) return;
+  ++shortPresses;
+  if (activeMeal.isEmpty() || clockEpoch==0 || int32_t(gesture.at-mealStartedMillis)<0) {
+    ++ignoredPresses; Serial.println("[button] short ignored: no armed meal at release"); return;
+  }
   for (auto &bite:pendingBites) if (bite.event[0]==0) {
     snprintf(bite.event,sizeof(bite.event),"%08lx%08lx-%08lx",(unsigned long)bootA,(unsigned long)bootB,(unsigned long)++eventSequence);
     activeMeal.toCharArray(bite.meal,sizeof(bite.meal));
-    bite.at=clockEpoch+uint32_t(millis()-clockMillis);
-    saveBite(&bite-pendingBites); lastEventSend=0; return;
+    bite.at=clockEpoch+int32_t(gesture.at-clockMillis);
+    saveBite(&bite-pendingBites); lastEventSend=0;
+    Serial.printf("[button] queued %s at %lld\n",bite.event,(long long)bite.at); return;
   }
   errorReply("","event_queue_full"); // explicit failure, never overwrite an unacknowledged bite
 }
@@ -159,6 +182,12 @@ void handle(const String &text) {
   JsonDocument result; result["id"] = id;
   if (op=="hello" || op=="ping") {
     result["type"] = "hello"; result["fw"] = VERSION; result["name"] = "NOMI01"; reply(result);
+  } else if (op=="button_status") {
+    result["type"]="button_status"; result["down"]=(digitalRead(1)==LOW);
+    result["active"]=!activeMeal.isEmpty(); result["short"]=shortPresses;
+    result["ignored"]=ignoredPresses; result["overflow"]=gestureOverflow;
+    unsigned count=0; for (auto &bite:pendingBites) if (bite.event[0]) ++count;
+    result["pending"]=count; reply(result);
   } else if (op=="led") {
     String color = doc["color"] | "";
     if (color!="green" && color!="red" && color!="off") { errorReply(id,"invalid_color"); return; }
@@ -172,6 +201,7 @@ void handle(const String &text) {
     String meal=doc["meal"] | "";
     int64_t epoch=doc["unixMs"] | int64_t(0);
     if (meal.length()>32 || epoch<1700000000000LL || epoch>4102444800000LL) { errorReply(id,"invalid_session"); return; }
+    if (activeMeal!=meal) mealStartedMillis=millis();
     activeMeal=meal; clockEpoch=epoch; clockMillis=millis();
     result["type"]="session"; result["active"]=!activeMeal.isEmpty(); reply(result);
   } else if (op=="ack_event") {
@@ -195,7 +225,7 @@ class ServerCallbacks : public BLEServerCallbacks {
 };
 void setup() {
   Serial.begin(115200); delay(400);
-  Serial.println("NOMI01 integration 0.4.1; physical button enabled; no audio/load/IMU/contact");
+  Serial.println("NOMI01 integration 0.4.2; physical button enabled; no audio/load/IMU/contact");
   rtc_gpio_deinit(GPIO_NUM_1); pinMode(1,INPUT_PULLUP); pinMode(2,OUTPUT);
   bool ledReady=ring.begin(); ring.setBrightness(46); ring.clear(); ledReady=ring.show()&&ledReady;
   Serial.printf("[led] GPIO4 RMT initialized and off frame transmitted: %s\n",ledReady?"OK":"FAILED");
@@ -236,6 +266,10 @@ void setup() {
   String infoText; serializeJson(info,infoText); infoChar->setValue(infoText.c_str());
   service->start();
   BLEAdvertising *advertising = BLEDevice::getAdvertising(); advertising->addServiceUUID(SERVICE); advertising->setScanResponse(true); advertising->start();
+  gestures=xQueueCreate(32,sizeof(Gesture));
+  if (!gestures || xTaskCreate(sampleButton,"nomi-button",3072,nullptr,2,nullptr)!=pdPASS) {
+    Serial.println("[button] sampler failed; restarting"); ESP.restart();
+  }
   Serial.println(infoText); Serial.println("[ble] advertising NOMI01");
 }
 void loop() {
@@ -246,6 +280,7 @@ void loop() {
     eventSubscription->setNotifications(false);
     lastCommandID=""; lastReply=""; BLEDevice::startAdvertising();
   }
+  buttonTick(); eventTick();
   Command item;
   if (xQueueReceive(commands,&item,pdMS_TO_TICKS(5))==pdTRUE) handle(String(item.text));
   frameTick();

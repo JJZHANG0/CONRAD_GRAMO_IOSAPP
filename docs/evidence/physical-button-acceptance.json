@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-19",
+  "firmware": "0.4.2-integration",
+  "physical_short_presses_user_confirmed": 4,
+  "new_unique_events_in_app": 4,
+  "firmware_pending_after_ack": 0,
+  "restored_after_app_relaunch": 4,
+  "frames_per_new_event": [
+    5,
+    5,
+    5,
+    5
+  ],
+  "missing_grams_stored_as_null": true,
+  "missing_energy_density_stored_as_null": true,
+  "new_inferred_calories": null,
+  "simulated_events_in_acceptance": 0,
+  "long_press_acceptance": "User confirmed blue button LED off then on; fresh BLE handshake/camera after wake; no new bite events",
+  "physical_led": "not illuminated; known unresolved electrical issue",
+  "after_wake_new_events": 4,
+  "after_wake_ready": true,
+  "after_wake_camera": "real JPEG received and decoded",
+  "final_app_installed": true
+}

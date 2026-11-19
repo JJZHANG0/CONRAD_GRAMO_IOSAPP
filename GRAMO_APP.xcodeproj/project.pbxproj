@@ -102,6 +102,7 @@
 				A10000000000000000000013 /* Sources */,
 				A1000000000000000000000D /* Frameworks */,
 				A10000000000000000000010 /* Resources */,
+				B20000000000000000000001 /* Local evaluation model */,
 			);
 			buildRules = (
 			);
@@ -224,6 +225,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+        B20000000000000000000001 /* Local evaluation model */ = {
+            isa = PBXShellScriptBuildPhase;
+            alwaysOutOfDate = 1;
+            buildActionMask = 2147483647;
+            files = ();
+            inputPaths = ();
+            outputPaths = ();
+            name = "Local evaluation model";
+            runOnlyForDeploymentPostprocessing = 0;
+            shellPath = /bin/sh;
+            shellScript = "\"$SRCROOT/tools/embed_evaluation_model.sh\"";
+        };
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A10000000000000000000013 /* Sources */ = {

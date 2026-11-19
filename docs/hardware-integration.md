@@ -1,6 +1,6 @@
 # 智味勺硬件联调证据
 
-更新：2026-11-15（Asia/Shanghai）。原工作目录 本机项目根目录；起始提交 `ddeb5c4`，起始 Git 状态为空，未重置、重排或删除历史。没有 AGENTS.md。原工程 `ZhiWeiShao.xcodeproj`，scheme/target `ZhiWeiShao`，iOS 18，SwiftUI/Core Bluetooth/UserDefaults JSON。基线 Simulator build 已通过。工程签名保持原样；真机编译通过命令行临时使用现有团队和证书。用户已完成开发证书信任。
+更新：2026-11-19（Asia/Shanghai）。原工作目录 本机项目根目录；起始提交 `ddeb5c4`，起始 Git 状态为空，未重置、重排或删除历史。没有 AGENTS.md。原工程 `ZhiWeiShao.xcodeproj`，scheme/target `ZhiWeiShao`，iOS 18，SwiftUI/Core Bluetooth/UserDefaults JSON。基线 Simulator build 已通过。工程签名保持原样；真机编译通过命令行临时使用现有团队和证书。用户已完成开发证书信任。
 
 > 2026-11-16 工程更名为 `GRAMO_APP.xcodeproj`，scheme/target 为 `GRAMO_APP`。下文保留先前硬件联调时的工程名称与记录。
 
@@ -9,10 +9,10 @@
 | 链路 | 源码已确认 | 真机已验证 | 待核实 |
 |---|---|---|---|
 | 原固件/板卡 | 用户提供 nomi_main.zip；config.h、cam.h、keys.h；XIAO ESP32S3 Sense | USB查询 ESP32-S3 QFN56 rev0.2、8MB Flash、8MB OPI PSRAM；原 Nomi v0.2 日志 | 商业分发授权、完整板卡原理图 |
-| 固件恢复 | 完整8MB备份，分区表及应用校验通过；Secure Boot/Flash Encryption关闭 | app0依次更新0.3.0、0.4.0、0.4.1；每次写后hash校验通过；原boot/分区/NVS保留 | 尚未实际执行回退烧录 |
+| 固件恢复 | 完整8MB备份，分区表及应用校验通过；Secure Boot/Flash Encryption关闭 | app0依次更新0.3.0、0.4.0、0.4.1、0.4.2；每次写后hash校验通过；原boot/分区/NVS保留 | 尚未实际执行回退烧录 |
 | BLE识别/连接 | 原同事程序无BLE；新增明确定义的Nomi扩展，原App v1分支保留 | iPhone发现广播NOMI01、读能力、订阅、hello往返成功，0.3/0.4均验证 | 长时间弱信号可靠性 |
 | 勺载相机 | cam.h原接线/OV3660修正；新BLE关键帧+CRC32传输 | 原串口640×480 JPEG成功；App收到、解码并显示真实BLE JPEG；0.4前台约2秒刷新，时间连续更新 | 正常餐具姿态下能否清楚看见勺内食物；多菜实拍准确率 |
-| 实体按钮 | keys.h确认GPIO1、低电平按下；GPIO2按键蓝灯；新增短按事件、ACK/重放/去重 | 0.4实体短按产生4个唯一事件，App保存4条待确认记录；session ACK成功 | 独立计数的单次/快速双次及长按休眠唤醒仍需现场验收 |
+| 实体按钮 | keys.h确认GPIO1、低电平按下；GPIO2按键蓝灯；新增短按事件、ACK/重放/去重 | 0.4.2四次实际短按保存四个唯一事件，275ms间隔独立计数；重启保留；用户确认长按蓝灯灭/亮，唤醒后无新口次 | 长时耐久与极弱信号测试 |
 | 实体灯带 | config.h确认3颗WS2812，GPIO4，GRB/800kHz，亮度46；新LED命令有ID和应用ACK | BLE绿色回执成功；0.4.1更换RMT驱动，USB返回tx=true；用户明确确认两版均完全不亮 | 实体灯验收失败：需测供电、共地、GPIO4→DIN及灯珠；不能仅靠回执定位具体故障 |
 | 载荷 | 原固件无载荷采集；旧程序固定克数没有沿用 | 无 | 载荷模块型号/接线、稳定原始读数、勺叉各自去皮/砝码标定 |
 | IMU/接触 | 旧motion代码存在，但主程序明确关闭IMU；无接触传感器证据 | 原启动日志确认IMU关闭 | 模块实际在板与否、采样单位/姿态标定/接触接线 |
@@ -60,3 +60,9 @@ Core ML真实权重、标签、归一化、导出和同输入对比见 [model-ev
 - 勺载拍摄电脑红烧肉图片，iPhone Core ML显示红烧肉约73.9%、莲藕约2.0%、花生约1.9%；为屏幕翻拍链路测试，不是真实盘面准确率或份量证据。保存样本`artifacts/evaluation/nomi-screen-pork-01.jpg`；该整帧离线结果与手机选区结果分别记录。
 - 0.4.1的GPIO4 RMT初始化和灭灯帧发送成功，绿色命令带同ID回执driver=rmt、tx=true。证据`artifacts/nomi-firmware/rmt-green.json`。用户随后明确回答“灯带仍完全不亮”，故实体灯绿转红未通过。按键蓝灯正常不代表独立WS2812灯带供电/数据正常。
 - 原源码ledEnabled=false且有3V3供电注释；本版未保留关闭开关。继续定位需要实际电气测量；目前不能断言具体损坏部件。App文案已改为“输出已回执；实际亮灯待目视确认”。
+
+## 2026-11-19 按键与本地识别修复
+
+详见[修复与验收记录](button-and-local-model-fix.md)。固件0.4.2已离线编译并只写app0，写后hash校验通过；相机初始化与广播真实确认。App会话同步重试、先记口后补帧、独立按键就绪提示已实现。iPhone离线Core ML三图测试通过；物理按键最终验收状态以该文档现场记录为准，不能用模拟器测试替代。
+
+2026-11-19最终现场：用户确认四次短按，App保存四个唯一事件（包含相隔275ms的两次独立操作），固件待ACK队列为0；App重启后四口保留。用户确认长按蓝灯先灭后亮，唤醒后再次握手并收到JPEG，没有额外记口。最终Debug修复版与本地评估模型已安装；缺重量/营养数据均保持待确认。完整汇总在`docs/evidence/physical-button-acceptance.json`。

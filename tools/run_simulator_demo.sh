@@ -18,11 +18,6 @@ xcodebuild -project GRAMO_APP.xcodeproj -scheme GRAMO_APP -configuration Debug \
   -destination "platform=iOS Simulator,id=$NOMI_SIM_ID" -derivedDataPath "$NOMI_BUILD_DIR" \
   build > "$NOMI_LOG_DIR/build.log" 2>&1
 xcrun simctl install "$NOMI_SIM_ID" "$NOMI_BUILD_DIR/Build/Products/Debug-iphonesimulator/GRAMO_APP.app"
-# Reuse the already-exported, local evaluation model in Debug only, if present.
-if [[ -d "$PWD/artifacts/chinese-food/ChineseFood.mlpackage" ]]; then
-  NOMI_SIM_CONTAINER=$(xcrun simctl get_app_container "$NOMI_SIM_ID" com.kanglaide.zhiweishao data)
-  mkdir -p "$NOMI_SIM_CONTAINER/Documents/Models"
-  cp -R "$PWD/artifacts/chinese-food/ChineseFood.mlpackage" "$NOMI_SIM_CONTAINER/Documents/Models/"
-fi
+# Debug build phase embeds the existing local evaluation model, when available.
 xcrun simctl launch --terminate-running-process "$NOMI_SIM_ID" com.kanglaide.zhiweishao -mock-device
 printf 'GRAMO_APP 模拟演示已启动；记录保存在独立模拟环境。\n日志：%s/build.log\n' "$NOMI_LOG_DIR"

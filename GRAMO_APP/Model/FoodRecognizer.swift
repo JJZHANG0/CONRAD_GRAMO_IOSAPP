@@ -7,6 +7,7 @@ struct RecognitionResult {
     var candidates: [FoodCandidate]
     var requiresConfirmation = true // Own-camera rejection calibration has not yet been collected.
     var note: String
+    var elapsedMilliseconds: Double = 0
 }
 struct ModelLabel: Decodable { var id: String; var rawLabel: String; var name: String }
 enum RecognitionError: LocalizedError {
@@ -33,11 +34,24 @@ actor FoodRecognizer {
         if url == nil {
             let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Models")
             let package = directory.appendingPathComponent("ChineseFood.mlpackage")
-            if FileManager.default.fileExists(atPath: package.path) { url = try MLModel.compileModel(at: package) }
+            if FileManager.default.fileExists(atPath: package.path) {
+                let cache = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent("ChineseFood-" + Self.revision + ".mlmodelc")
+                if !FileManager.default.fileExists(atPath: cache.path) {
+                    let compiled = try MLModel.compileModel(at: package)
+                    try FileManager.default.copyItem(at: compiled, to: cache)
+                }
+                url = cache
+            }
         }
         #endif
         guard let url else { throw RecognitionError.missingModel }
-        let configuration = MLModelConfiguration(); configuration.computeUnits = .cpuOnly
+        let configuration = MLModelConfiguration()
+        #if targetEnvironment(simulator)
+        configuration.computeUnits = .cpuOnly
+        #else
+        configuration.computeUnits = .all
+        #endif
         let loaded = try MLModel(contentsOf: url, configuration: configuration)
         let metadata = loaded.modelDescription.metadata[.creatorDefinedKey] as? [String: String]
         guard metadata?["model_revision"] == Self.revision,
@@ -47,7 +61,17 @@ actor FoodRecognizer {
         self.labels = labels; model = loaded
         return loaded
     }
+    func warmUp() throws { _ = try load() }
+    func preparePhoto(_ image: UIImage, directory: URL) throws -> (image: UIImage, id: String) {
+        let upright = Self.upright(image)
+        guard let data = upright.jpegData(compressionQuality: 0.9) else { throw RecognitionError.invalidImage }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let id = UUID().uuidString + ".jpg"
+        try data.write(to: directory.appendingPathComponent(id), options: [.atomic, .completeFileProtection])
+        return (upright, id)
+    }
     func recognize(_ image: UIImage, region: CGRect? = nil, source: String, imageID: String?, diagnosticDirectory: URL? = nil) throws -> RecognitionResult {
+        let started = CFAbsoluteTimeGetCurrent()
         let model = try load()
         let pixel = try Self.preprocess(image, region: region)
         let input = try MLDictionaryFeatureProvider(dictionary: ["image": MLFeatureValue(pixelBuffer: pixel)])
@@ -66,9 +90,10 @@ actor FoodRecognizer {
             try? evidence.write(to: root.appendingPathComponent("RecognitionEvidence.json"), options: .atomic)
         }
         #endif
-        return RecognitionResult(candidates: candidates, note: "同一选区的三个备选名称；请确认一项。尚无本机相机拒识标定，非食物也可能获得高分。")
+        return RecognitionResult(candidates: candidates, note: "同一选区的三个备选名称；请确认一项。尚无本机相机拒识标定，非食物也可能获得高分。", elapsedMilliseconds: (CFAbsoluteTimeGetCurrent() - started) * 1000)
     }
     static func upright(_ image: UIImage) -> UIImage {
+        if image.imageOrientation == .up, image.scale == 1, image.cgImage != nil { return image }
         let format = UIGraphicsImageRendererFormat(); format.scale = 1; format.opaque = true
         // UIImage draw applies all EXIF orientations, including mirrored images.
         return UIGraphicsImageRenderer(size: image.size, format: format).image { _ in image.draw(in: CGRect(origin: .zero, size: image.size)) }

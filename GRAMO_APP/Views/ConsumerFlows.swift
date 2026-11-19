@@ -149,7 +149,7 @@ struct MealExperienceView: View {
                             Image(systemName: "fork.knife").font(.system(size: 35,weight: .ultraLight)).foregroundStyle(.white.opacity(0.35))
                         }.foregroundStyle(.white)
                         HStack {
-                            Text(store.t(store.state.hideCalories ? "热量已隐藏" : String(format: "约 %.0f kcal", entries.compactMap(\.estimatedKcal).reduce(0,+)))).font(.system(size: 16,weight: .medium))
+                            Text(store.t(store.state.hideCalories ? "热量已隐藏" : (entries.compactMap(\.estimatedKcal).isEmpty ? "热量待完善" : String(format: "约 %.0f kcal", entries.compactMap(\.estimatedKcal).reduce(0,+))))).font(.system(size: 16,weight: .medium))
                             Spacer()
                             Text(store.t("\(entries.filter { $0.estimatedKcal == nil }.count) 口待完善")).font(.system(size: 12))
                         }.foregroundStyle(.white.opacity(0.7))
@@ -160,7 +160,7 @@ struct MealExperienceView: View {
                 } else {
                     HStack(spacing: 10) {
                         Image(systemName: store.deviceReady ? "hand.tap" : "link").font(.system(size: 18,weight: .light))
-                        Text(store.t(store.deviceReady ? "吃完离口后，短按餐勺记录这一口。" : "餐勺未连接。已保存的记录不会丢失。"))
+                        Text(store.t(store.consumerButtonStatus)).accessibilityIdentifier("button-recording-status")
                             .font(.system(size: 13)).foregroundStyle(Palette.secondary)
                         Spacer(minLength: 0)
                         if !store.deviceReady { Button(store.t("连接")) { device = true }.font(.system(size: 13,weight: .medium)) }

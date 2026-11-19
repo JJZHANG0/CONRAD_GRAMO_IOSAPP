@@ -28,7 +28,7 @@ struct NomiInfo: Decodable {
     var imu: Bool
     var contact: Bool
     var button: Bool?
-    var supported: Bool { v == 1 && `protocol` == "nomi1" && ["0.3.0-integration", "0.4.0-integration", "0.4.1-integration"].contains(fw) }
+    var supported: Bool { v == 1 && `protocol` == "nomi1" && ["0.3.0-integration", "0.4.0-integration", "0.4.1-integration", "0.4.2-integration"].contains(fw) }
 }
 struct NomiButtonEvent: Codable {
     var v: Int

@@ -26,6 +26,7 @@ final class AppStore {
     var cameraBusy = false
     var cameraMessage = "勺载相机尚未就绪"
     var cameraStatus = "尚未收到勺载画面"
+    var buttonSessionReady = false
     var buttonMessage = "实体按钮尚未就绪"
     var appActive = true
     var previewOwners = Set<String>()
@@ -90,6 +91,13 @@ final class AppStore {
         case .bluetoothOff: return "蓝牙未开启"
         default: return "未连接"
         }
+    }
+    var consumerButtonStatus: String {
+        guard activeIntegrationMealID != nil else { return "开始本餐后即可短按记录" }
+        guard deviceReady else { return "餐勺未连接。已保存的记录不会丢失。" }
+        if isSimulation || buttonSessionReady { return "吃完离口后，短按餐勺记录这一口。" }
+        if nomiCapabilities?.button != true { return "此设备尚未支持按键记录，可先手动补记。" }
+        return "正在准备按键记录，请稍候…"
     }
     func synchronizeSession() {
         #if DEBUG
@@ -457,6 +465,7 @@ final class AppStore {
         spoonFrame = frame
         recentFrames.append(frame)
         recentFrames = Array(recentFrames.filter { frame.timestamp.timeIntervalSince($0.timestamp) <= 20 }.suffix(12))
+        var changed = false
         // Add the first post-confirmation frame to the same record, without replacing corrections.
         for mi in state.meals.indices {
             for fi in state.meals[mi].foods.indices {
@@ -465,11 +474,11 @@ final class AppStore {
                       frame.timestamp > e.timestamp, frame.timestamp.timeIntervalSince(e.timestamp) <= 6,
                       !(e.frames ?? []).contains(where: { $0.phase == "after" }) else { continue }
                 if let reference = retainFrame(frame, phase: "after") {
-                    e.frames = (e.frames ?? []) + [reference]; state.meals[mi].foods[fi].evidence = e
+                    e.frames = (e.frames ?? []) + [reference]; state.meals[mi].foods[fi].evidence = e; changed = true
                 }
             }
         }
-        persist(); return true
+        if changed { persist() }; return true
     }
     private func retainFrame(_ frame: SpoonCameraFrame, phase: String) -> IntakeFrame? {
         let relative = "BiteFrames/\(frame.id.uuidString).jpg"
@@ -487,14 +496,26 @@ final class AppStore {
             buttonMessage = "已忽略非用餐时段短按；未增加记录"; return true
         }
         let selected = settings.currentDishSince.map { event.timestamp >= $0 } == true && event.meal == activeIntegrationMealID ? currentDish : nil
-        let frames = recentFrames.filter { $0.deviceID == event.device && $0.timestamp <= event.timestamp && event.timestamp.timeIntervalSince($0.timestamp) <= 12 }
-            .suffix(4).compactMap { retainFrame($0, phase: "before") }
+        let nearbyFrames = recentFrames.filter { $0.deviceID == event.device && $0.timestamp <= event.timestamp && event.timestamp.timeIntervalSince($0.timestamp) <= 12 }
+            .suffix(4)
         let evidence = IntakeEvidence(eventID: event.event, deviceID: event.device, timestamp: event.timestamp,
             dish: selected, grams: nil, kcalPer100g: nil, nutritionSource: "", measurement: "实体短按确认，份量待补录",
-            confirmedEating: true, corrected: false, note: "吃完离口后短按；附近关键帧仅供核对，不能单独证明食物或克数。", frames: frames)
+            confirmedEating: true, corrected: false, note: "吃完离口后短按；附近关键帧仅供核对，不能单独证明食物或克数。", frames: [])
         saveIntake(evidence, mealID: event.meal)
         buttonMessage = "已记录一口 · 菜名或份量缺失时待确认"; flash("已记录 · 第 \(todayBiteCount) 口")
-        recordHardwareEvidence(); return true
+        Task { [weak self] in
+            guard let self else { return }
+            let frames = nearbyFrames.compactMap { self.retainFrame($0, phase: "before") }
+            // Merge with the current record: never resurrect a deleted bite or undo a correction.
+            if !frames.isEmpty, let mi = self.state.meals.firstIndex(where: { $0.id == event.meal }),
+               let fi = self.state.meals[mi].foods.firstIndex(where: { $0.evidence?.key == event.key }),
+               var current = self.state.meals[mi].foods[fi].evidence {
+                current.frames = (current.frames ?? []) + frames
+                self.state.meals[mi].foods[fi].evidence = current; self.persist()
+            }
+            self.recordHardwareEvidence()
+        }
+        return true
     }
     func recordHardwareEvidence() {
         #if DEBUG

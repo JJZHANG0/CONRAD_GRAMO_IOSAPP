@@ -140,7 +140,7 @@ xcodebuild -project GRAMO_APP.xcodeproj -scheme GRAMO_APP \
   CODE_SIGNING_ALLOWED=NO build
 ```
 
-The verified suite covers **31 unit tests and 6 UI tests**: event deduplication, independent presses, long-press exclusion, missing evidence, offline replay, correction/deletion, exact goal thresholds, local-day rollover, persistence and English/Chinese switching. See [rename and build verification](docs/project-rename.md) for the latest run.
+The verified suite covers **35 unit/model tests and 6 simulator UI tests**: event deduplication, independent presses, long-press exclusion, missing evidence, offline replay, correction/deletion, exact goal thresholds, local-day rollover, persistence and English/Chinese switching. See [button reliability and local-model verification](docs/button-and-local-model-fix.md) for the latest run.
 
 ## Recognition and hardware status
 
@@ -153,7 +153,7 @@ The verified suite covers **31 unit tests and 6 UI tests**: event deduplication,
 | Physical LED | Goal commands, acknowledgments and simulated threshold tests | The prototype strip remained dark; a command acknowledgment is not proof of visible light |
 | Portion measurement | Validated-input algorithms and manual entry | No uncalibrated visual area is converted to grams |
 
-The optional evaluation model is [Albertbeta123/resnet-50-chinese-food](https://huggingface.co/Albertbeta123/resnet-50-chinese-food), pinned to a specific revision. Export instructions, model/data rights and placement are in [model evaluation](docs/model-evaluation.md). The demo script copies an existing local evaluation package into Debug storage if available; it does not download weights automatically. Release does not load an external Debug evaluation package.
+The optional evaluation model is [Albertbeta123/resnet-50-chinese-food](https://huggingface.co/Albertbeta123/resnet-50-chinese-food), pinned to a specific revision. Export instructions, model/data rights and placement are in [model evaluation](docs/model-evaluation.md). Debug builds compile an existing local `artifacts/chinese-food/ChineseFood.mlpackage` into the app. Weights are not downloaded automatically or committed to this repository. Release does not bundle this evaluation resource or load an external Debug package. The latest local benchmark measured about 0.12 seconds for a 640×480 spoon-camera sample on the test iPhone; see the [performance evidence and limitations](docs/button-and-local-model-fix.md).
 
 ## Documentation
 

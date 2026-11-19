@@ -25,9 +25,7 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
     private var captureTimeout: Task<Void, Never>?
     private var imageAssembler: NomiImageAssembler?
     private var lastCaptureAttempt = Date.distantPast
-    private var lastSession: String?
-    private var sessionCommand: UUID?
-    private var sessionSentAt = Date.distantPast
+    private var session = MealSessionSync()
     private(set) var diagnostics = "尚未发现 GATT"
     var deviceID: String { connected?.identifier.uuidString ?? "unknown" }
     var ready: Bool { handshaken || (receivedKnownPacket && subscribed.contains(SpoonLink.meal)) }
@@ -224,7 +222,7 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
     private func resetNomi() {
         controlCharacteristic = nil; nomiInfo = nil; helloID = nil; handshaken = false
         captureID = nil; imageAssembler = nil; captureTimeout?.cancel()
-        lastSession = nil; sessionCommand = nil
+        session.reset(); store?.buttonSessionReady = false
         store?.nomiCapabilities = nil; store?.cameraBusy = false
         store?.buttonMessage = "实体按钮未连接 / 未同步"
         store?.cameraMessage = "相机连接已中断"
@@ -260,19 +258,16 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
         }
     }
     func tick(now: Date, preview: Bool) {
-        if sessionCommand != nil, now.timeIntervalSince(sessionSentAt) > 8 {
-            sessionCommand = nil; store?.buttonMessage = "用餐状态同步超时，请重新同步设备"
-        }
+        syncSession(meal: store?.activeIntegrationMealID, now: now)
         if preview && canCapture && captureID == nil && now.timeIntervalSince(lastCaptureAttempt) >= 2 { captureFrame() }
     }
-    func syncSession(meal: String?, force: Bool = false) {
+    func syncSession(meal: String?, force: Bool = false, now: Date = Date()) {
         guard handshaken, nomiInfo?.button == true, subscribed.contains(NomiWire.events) else { return }
-        let value = meal ?? ""
-        guard force || lastSession != value else { return }
-        lastSession = value; sessionCommand = UUID(); sessionSentAt = Date()
+        guard let request = session.next(meal: meal, now: now, force: force) else { return }
+        store?.buttonSessionReady = false
         store?.buttonMessage = "正在同步用餐与实体按键状态…"
-        do { try command("session", id: sessionCommand!, extra: ["meal": value, "unixMs": Int64(Date().timeIntervalSince1970*1000)]) }
-        catch { sessionCommand = nil; lastSession = nil; store?.buttonMessage = "实体按钮同步失败" }
+        do { try command("session", id: request.id, extra: ["meal": request.meal, "unixMs": Int64(now.timeIntervalSince1970*1000)]) }
+        catch { store?.buttonMessage = "实体按钮同步失败，正在重试" }
     }
     private func receiveControl(_ data: Data) {
         guard data.count <= 512, let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -282,10 +277,10 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
             handshaken = true; timeout?.cancel(); retryCount = 0
             store?.nomiReady(name: nomiInfo?.name ?? "NOMI01")
             if canCapture { store?.cameraMessage = "相机通道已就绪，等待真实画面" }
-            syncSession(meal: store?.activeIntegrationMealID, force: true)
+            syncSession(meal: store?.activeIntegrationMealID)
             store?.recordHardwareEvidence()
-        } else if type == "session", id == sessionCommand {
-            sessionCommand = nil
+        } else if type == "session", let active = value["active"] as? Bool, session.acknowledge(id: id, active: active, now: Date()) {
+            store?.buttonSessionReady = session.ready(for: store?.activeIntegrationMealID)
             store?.buttonMessage = value["active"] as? Bool == true ? "实体短按已启用 · 吃完离口后短按一次" : "尚未开始用餐 · 短按不入账"
             store?.recordHardwareEvidence()
         } else if type == "led", value["applied"] as? Bool == true,

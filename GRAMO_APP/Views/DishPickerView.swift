@@ -13,6 +13,7 @@ struct DishPickerView: View {
     @State private var imageID: String?
     @State private var candidates: [FoodCandidate] = []
     @State private var busy = false
+    @State private var requestID = UUID()
     @State private var awaitingFrame = false
     @State private var phoneCamera = false
     @State private var source = "相册照片"
@@ -67,6 +68,8 @@ struct DishPickerView: View {
         }
         }.pageBackground().simulationContext().navigationTitle(store.t("选择菜品")).navigationBarTitleDisplayMode(.inline)
         .toolbar { ToolbarItem(placement: .confirmationAction) { Button(store.t("取消")) { dismiss() } } }
+        .task { try? await FoodRecognizer.shared.warmUp() }
+        .onDisappear { requestID = UUID(); busy = false }
         .fullScreenCover(isPresented: $phoneCamera) { PhoneCamera { accept($0,source: "iPhone 相机") }.ignoresSafeArea() }
         .onChange(of: photo) { _, new in Task {
             guard let data = try? await new?.loadTransferable(type: Data.self), let image = UIImage(data: data) else { return }
@@ -91,27 +94,33 @@ struct DishPickerView: View {
         Task { if await AVCaptureDevice.requestAccess(for: .video) { phoneCamera = true } else { message = "请在系统设置允许相机权限，或选择相册照片。" } }
     }
     private func accept(_ value: UIImage,source: String) {
-        self.image = FoodRecognizer.upright(value); self.source = source; region = nil; candidates = []; busy = false; selectingRegion = false
-        let id = UUID().uuidString + ".jpg"
+        let token = UUID(); requestID = token
+        self.source = source; region = nil; candidates = []; busy = true; selectingRegion = false
         let folder = store.dataDirectory.appendingPathComponent("Keyframes")
-        do {
-            try FileManager.default.createDirectory(at: folder,withIntermediateDirectories: true)
-            guard let data = image?.jpegData(compressionQuality: 0.9) else { return }
-            try data.write(to: folder.appendingPathComponent(id),options: [.atomic,.completeFileProtection])
-            imageID = id; message = "照片只留在本机。确认菜名后，就可以开始记录。"
-        } catch { imageID = nil; message = "照片暂时无法保存，可以手动输入菜名。" }
+        Task {
+            do {
+                let prepared = try await FoodRecognizer.shared.preparePhoto(value, directory: folder)
+                guard requestID == token else { return }
+                image = prepared.image; imageID = prepared.id; busy = false
+                message = "照片只留在本机。确认菜名后，就可以开始记录。"
+            } catch {
+                guard requestID == token else { return }
+                busy = false; message = "照片暂时无法保存，可以手动输入菜名。"
+            }
+        }
     }
     private func recognize() {
         guard let image else { return }
         let id = imageID, selected = region, origin = source
+        let token = UUID(); requestID = token
         busy = true; candidates = []; selectingRegion = false
         Task {
-            defer { busy = false }
+            defer { if requestID == token { busy = false } }
             do {
                 let result = try await FoodRecognizer.shared.recognize(image,region: selected,source: origin,imageID: id)
-                guard id == imageID, selected == region else { return }
+                guard requestID == token, id == imageID, selected == region else { return }
                 candidates = result.candidates; message = "请选择与你这道菜相符的名称。"
-            } catch { message = "暂时无法辨认这道菜，手动输入名称也一样可以记录。" }
+            } catch { if requestID == token { message = "暂时无法辨认这道菜，手动输入名称也一样可以记录。" } }
         }
     }
 }

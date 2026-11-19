@@ -88,6 +88,7 @@ struct RootView: View {
             .tabItem { Label(store.t("我的"), systemImage: "person") }
             .tag(3)
         }
+        .hardwareAcceptance(store: store)
         .onChange(of: scenePhase) { _, phase in
             store.appActive = phase == .active
             if phase == .active { store.refreshDay(); store.synchronizeSession() }
