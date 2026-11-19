@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-19",
+  "scope": "Press-first recording with automatic provisional dish association",
+  "full_unit_suite": {
+    "tests": 44,
+    "failures": 0,
+    "log": "artifacts/automatic-dish/tests.log"
+  },
+  "final_targeted_regression": {
+    "tests": 9,
+    "failures": 0,
+    "log": "artifacts/automatic-dish/regression.log"
+  },
+  "simulator_ui": {
+    "tests": 1,
+    "failures": 0,
+    "actions": [
+      "No dish selected",
+      "Synthetic portion disabled",
+      "Two independent short presses save two bites",
+      "Replay does not add a bite",
+      "No dish/portion form opens",
+      "Relaunch preserves two bites"
+    ],
+    "screenshot": "artifacts/automatic-dish/meal-simulator.png",
+    "final_log": "artifacts/automatic-dish/ui-final.log"
+  },
+  "model_replay": {
+    "source": "Archived real spoon-camera photograph of pork shown on a computer screen, replayed twice",
+    "sample": "artifacts/evaluation/nomi-screen-pork-01.jpg",
+    "sha256": "7a104f229ec5527d6e7a20604d2adb05279124f59a10a29f61f187005185d43d",
+    "class_id": "77",
+    "confidence": 0.7817524671554565,
+    "saved_bites_after_replay": 1,
+    "grams": null,
+    "kcal": null,
+    "is_live_meal_validation": false
+  },
+  "device": {
+    "signed_build": "passed",
+    "installation": "succeeded",
+    "launch": "succeeded after user unlocked iPhone; no new live physical press acceptance claimed",
+    "bundle_id": "com.kanglaide.zhiweishao",
+    "project_signing_modified": false,
+    "firmware_modified": false,
+    "new_live_physical_press_acceptance": false
+  },
+  "limitations": [
+    "No calibrated food/non-food rejection; dish names remain suggestions",
+    "No mouth or spoon-food segmentation validation",
+    "No reliable automatic mass or kcal with present uncalibrated hardware",
+    "Only existing local evaluation model used; cloud candidate not deployed"
+  ]
+}

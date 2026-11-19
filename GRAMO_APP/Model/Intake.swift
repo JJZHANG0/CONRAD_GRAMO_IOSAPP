@@ -25,6 +25,7 @@ struct IntakeEvidence: Codable, Equatable {
     var corrected: Bool
     var note: String
     var frames: [IntakeFrame]? = nil
+    var automaticDish: Bool? = nil // Provisional image classification; never a manual confirmation.
     var estimatedKcal: Double? {
         guard confirmedEating, let dish, !dish.name.isEmpty,
               let grams, grams.isFinite, grams > 0,

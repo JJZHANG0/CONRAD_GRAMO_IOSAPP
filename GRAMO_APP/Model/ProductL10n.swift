@@ -3,6 +3,23 @@ import Foundation
 /// Consumer copy is separate from stored records and wire protocol strings.
 extension L10n {
     static let productEnglish: [String: String] = [
+        "口已记录，尚无热量估算": "bites saved · calories unavailable",
+        "开启本餐，让镜头看向食物。吃完短按，菜名自动关联，无需逐口填写。": "Start a meal and point the camera at your food. Press after each bite; dish names are linked automatically.",
+        "短按即记录，无需逐口填写": "Press to record. No per-bite forms.",
+        "暂无可靠热量估算": "Calorie estimate unavailable",
+        "自动识别菜品": "Automatic dish recognition",
+        "等待清晰的食物画面": "Waiting for a clear view of food",
+        "已锁定菜品，可随时恢复自动识别": "Dish locked. You can resume automatic recognition anytime.",
+        "识别暂不可用，短按仍会保存这一口": "Recognition unavailable. A press still saves your bite.",
+        "自动识别 · 菜名可能有误，可轻点修正": "Camera suggestion · Tap to correct if needed",
+        "镜头看向食物，菜名会自动关联；短按即可记录": "Point the camera at food. Press to record; dish names link automatically.",
+        "恢复自动识别": "Resume automatic recognition",
+        "修正": "Correct",
+        "吃完离口后短按即可。时间与口次立即保存，近期画面自动帮助识别菜品。": "Press after eating. The time and bite are saved immediately; recent images help identify the dish.",
+        "菜名是画面推测，认错时再修正。未获得可靠份量前，不显示克数和热量。": "Dish names are camera suggestions. Correct only if needed. Weight and calories need a reliable portion measurement.",
+        "已记录这一口": "Bite recorded",
+        "自动识别 · 菜名待核对": "Camera suggestion · Not confirmed",
+        "份量尚未测得": "Portion not measured",
         "开始本餐后即可短按记录": "Start a meal to enable button recording",
         "此设备尚未支持按键记录，可先手动补记。": "Button recording is unavailable. You can add a bite manually.",
         "正在准备按键记录，请稍候…": "Preparing button recording…",

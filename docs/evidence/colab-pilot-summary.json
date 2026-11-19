@@ -1,0 +1,67 @@
+{
+  "status": "completed_downloaded_audited_not_deployable",
+  "date": "2026-11-19",
+  "source": "Downloaded archive; independently recomputed metrics and audited data",
+  "model_revision": "1ce5801e5905f15de1c4e55c89ef2a8cd6d6a97c",
+  "images": {
+    "0": 45,
+    "71": 45,
+    "77": 18
+  },
+  "split": {
+    "train": 60,
+    "validation": 31,
+    "test": 17
+  },
+  "epochs": 12,
+  "selected_epoch": 12,
+  "test": {
+    "baseline": {
+      "top1_correct": 8,
+      "top3_correct": 10,
+      "count": 17
+    },
+    "candidate": {
+      "top1_correct": 11,
+      "top3_correct": 11,
+      "count": 17
+    }
+  },
+  "validation": {
+    "baseline_top1": 0.35483869910240173,
+    "candidate_top1": 0.4516128897666931
+  },
+  "base_checksums_verified": true,
+  "app_model_replaced": false,
+  "limitations": [
+    "Weak category labels; not individually reviewed",
+    "Small three-class test set",
+    "Base pretraining overlap unknown",
+    "No spoon-camera accuracy or 114-class regression claim",
+    "No inference latency improvement measured",
+    "One multi-dish photo had conflicting labels in training; candidate remains evaluation-only."
+  ],
+  "training_seconds": 146.4060521680001,
+  "archive_sha256": "3aab51cc982eeb8866c1ea1c9a005375595bac3f938beec02d1b0dfabf17fb8c",
+  "candidate_checksums": {
+    "candidate/model.safetensors": "cdd53dc6529d347da0a90c2b64146faf1bf39363696f8c976de25dc78694e1cd",
+    "candidate/config.json": "9d9e7e78bc8fda6fed213f71a1c940970c268bf28262adc1827f56d0b4f85c98",
+    "candidate/preprocessor_config.json": "9ef34d18dbf7909143a91f05ad23457180fcfed05034bf94843f300e32a9b968"
+  },
+  "backbone_unchanged": true,
+  "uncovered_classifier_rows_unchanged": true,
+  "gpu_session_ended": true,
+  "unique_image_count": 107,
+  "sample_row_count": 108,
+  "data_audit": {
+    "conflicting_page_id": 138634132,
+    "labels": [
+      0,
+      71
+    ],
+    "both_in": "train",
+    "cross_split_leakage": false,
+    "excluded_by_updated_training_entry": true,
+    "cleaned_training_rerun": false
+  }
+}

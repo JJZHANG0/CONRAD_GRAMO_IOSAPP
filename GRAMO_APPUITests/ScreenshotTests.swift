@@ -43,6 +43,31 @@ final class ScreenshotTests: XCTestCase {
         reveal(app.buttons["profile-privacy"],in: app); app.buttons["profile-privacy"].tap()
         XCTAssertTrue(app.buttons["prepare-export"].waitForExistence(timeout: 3))
     }
+    func testPressOnlyMealDoesNotRequireDishOrPortionForm() {
+        let app = launch(mock: true)
+        openControls(app)
+        app.buttons["mock-connect"].tap(); app.buttons["mock-start-meal"].tap()
+        let portion = app.switches["mock-portion"]
+        reveal(portion, in: app)
+        portion.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        XCTAssertEqual(portion.value as? String, "0")
+        reveal(app.buttons["mock-short"], in: app); app.buttons["mock-short"].tap()
+        totals(app, "1 口 · 0 kcal · 1 口待完善")
+        app.buttons["mock-replay"].tap(); totals(app, "1 口 · 0 kcal · 1 口待完善")
+        app.buttons["mock-short"].tap(); totals(app, "2 口 · 0 kcal · 2 口待完善")
+        app.buttons["完成"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["meal-bite-count"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.staticTexts["meal-bite-count"].label, "2")
+        XCTAssertFalse(app.textFields["dish-name"].exists)
+        XCTAssertFalse(app.buttons["save-bite"].exists)
+        XCTAssertTrue(app.staticTexts["短按即记录，无需逐口填写"].exists)
+        shot(app, "automatic-meal-no-per-bite-form")
+        app.terminate()
+        let reopened = launch(mock: true, reset: false)
+        reopened.buttons["start-meal"].tap()
+        XCTAssertTrue(reopened.staticTexts["meal-bite-count"].waitForExistence(timeout: 3))
+        XCTAssertEqual(reopened.staticTexts["meal-bite-count"].label, "2")
+    }
     func testMockPressReplayPowerHistoryAndRelaunch() {
         let app = launch(mock: true)
         openControls(app)

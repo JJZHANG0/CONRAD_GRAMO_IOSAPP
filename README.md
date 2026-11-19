@@ -37,7 +37,7 @@ GRAMO_APP brings your spoon, meal history and daily goal into a calm, monochrome
 - **A record you can correct.** Review, supplement or delete a bite; totals recalculate from the same ledger.
 - **Trends with context.** Seven- and thirty-day views; missing records are not treated as zero intake.
 - **English and 简体中文.** English by default. Switch in **Profile → Language**; your choice survives restart.
-- **Local-first recognition.** Choose a dish manually, select a photo, or use a supported spoon camera. Optional Core ML inference runs on-device.
+- **Press-first recording.** During a meal, a short press saves the bite immediately. With the local evaluation model installed, recent spoon-camera images automatically supply a provisional dish name; manual selection is an optional correction. Missing weight never becomes invented calories.
 - **A separate development space.** Debug controls, protocol diagnostics and simulated records stay out of the ordinary consumer experience.
 
 ## Get started
@@ -164,6 +164,8 @@ The optional evaluation model is [Albertbeta123/resnet-50-chinese-food](https://
 | [Hardware evidence](docs/hardware-integration.md) | Source-confirmed, device-verified and unresolved findings |
 | [NOMI protocol](docs/nomi-protocol.md) | Camera frames, button events and LED commands |
 | [Model evaluation](docs/model-evaluation.md) | Export, preprocessing, labels, parity and licensing constraints |
+| [Free Colab pilot](docs/colab-training.md) | Reproducible, isolated small-scale food-model fine-tuning |
+| [Cuisine image dataset](docs/cuisine-dataset.md) | Public-image collection, attribution, quarantine and review gates |
 | [Firmware](firmware/README.md) | Known board, build instructions and recovery boundaries |
 | [Third-party notes](THIRD_PARTY_NOTICES.md) | Model sources and distribution scope |
 

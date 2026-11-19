@@ -1,0 +1,174 @@
+{
+  "base": "Albertbeta123/resnet-50-chinese-food",
+  "revision": "1ce5801e5905f15de1c4e55c89ef2a8cd6d6a97c",
+  "seed": 20261119,
+  "selected_epoch": 12,
+  "baseline": {
+    "train": {
+      "n": 60,
+      "top1": 0.4333333671092987,
+      "top3": 0.5833333730697632,
+      "loss": 2.5419156551361084,
+      "macro_top1": 0.3775588274002075
+    },
+    "val": {
+      "n": 31,
+      "top1": 0.35483869910240173,
+      "top3": 0.4516128897666931,
+      "loss": 3.661715030670166,
+      "macro_top1": 0.42626267671585083
+    },
+    "test": {
+      "n": 17,
+      "top1": 0.47058823704719543,
+      "top3": 0.5882353186607361,
+      "loss": 2.785036087036133,
+      "macro_top1": 0.4888889193534851
+    }
+  },
+  "candidate": {
+    "train": {
+      "n": 60,
+      "top1": 0.6500000357627869,
+      "top3": 0.8500000238418579,
+      "loss": 1.3844503164291382,
+      "macro_top1": 0.6230980157852173
+    },
+    "val": {
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.5161290168762207,
+      "loss": 2.355825185775757,
+      "macro_top1": 0.5898990035057068
+    },
+    "test": {
+      "n": 17,
+      "top1": 0.6470588445663452,
+      "top3": 0.6470588445663452,
+      "loss": 1.7811731100082397,
+      "macro_top1": 0.674074113368988
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "n": 31,
+      "top1": 0.35483869910240173,
+      "top3": 0.4516128897666931,
+      "loss": 3.525235414505005,
+      "macro_top1": 0.42626267671585083
+    },
+    {
+      "epoch": 2,
+      "n": 31,
+      "top1": 0.35483869910240173,
+      "top3": 0.4516128897666931,
+      "loss": 3.4006218910217285,
+      "macro_top1": 0.42626267671585083
+    },
+    {
+      "epoch": 3,
+      "n": 31,
+      "top1": 0.4193548262119293,
+      "top3": 0.4516128897666931,
+      "loss": 3.2792415618896484,
+      "macro_top1": 0.5232323408126831
+    },
+    {
+      "epoch": 4,
+      "n": 31,
+      "top1": 0.4193548262119293,
+      "top3": 0.4516128897666931,
+      "loss": 3.1580357551574707,
+      "macro_top1": 0.5232323408126831
+    },
+    {
+      "epoch": 5,
+      "n": 31,
+      "top1": 0.4193548262119293,
+      "top3": 0.4516128897666931,
+      "loss": 3.0427446365356445,
+      "macro_top1": 0.5232323408126831
+    },
+    {
+      "epoch": 6,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.4516128897666931,
+      "loss": 2.9326062202453613,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 7,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.4838709533214569,
+      "loss": 2.825892210006714,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 8,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.4838709533214569,
+      "loss": 2.7240896224975586,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 9,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.5161290168762207,
+      "loss": 2.6280198097229004,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 10,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.5161290168762207,
+      "loss": 2.5328946113586426,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 11,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.5161290168762207,
+      "loss": 2.438607931137085,
+      "macro_top1": 0.5898990035057068
+    },
+    {
+      "epoch": 12,
+      "n": 31,
+      "top1": 0.4516128897666931,
+      "top3": 0.5161290168762207,
+      "loss": 2.355825185775757,
+      "macro_top1": 0.5898990035057068
+    }
+  ],
+  "failed_downloads": [],
+  "gpu": "Tesla T4",
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "seconds": 146.4060521680001,
+  "classes": {
+    "0": "Mapo Tofu",
+    "71": "Kung Pao Chicken",
+    "77": "Braised pork"
+  },
+  "deployment_approved": false,
+  "limitations": [
+    "Three weakly labelled Commons categories only; not a 114-class accuracy estimate.",
+    "Base pretraining overlap unknown; these are not proven unseen images.",
+    "No spoon-camera domain test, no non-food rejection calibration, no commercial data clearance.",
+    "Frozen feature extractor: no inference latency improvement expected.",
+    "Author and perceptual-hash grouping is conservative, not proof of plate identity."
+  ],
+  "base_checksums_verified": {
+    "model.safetensors": "301c5262348a25beeb782d11cbd083dfad8d478f92672ef5a237b4f557d79849",
+    "config.json": "19cc85be4edd124800b69b04c2f882314327b91a079ebbd4f1d6d3ac31f6dd7b",
+    "preprocessor_config.json": "9ef34d18dbf7909143a91f05ad23457180fcfed05034bf94843f300e32a9b968"
+  },
+  "input_manifest_sha256": "d3206a29d39c7c5f4347e0dc679e059a1c42e27536bc2bb726773193dac935b6"
+}

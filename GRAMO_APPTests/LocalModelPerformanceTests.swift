@@ -4,8 +4,37 @@ import UIKit
 @testable import GRAMO_APP
 
 /// Optional real-photo bench: copy private samples to Documents/ModelBenchSamples.
-/// It does not write meal records or include sample images in the repository.
+/// Replay records use an isolated test defaults domain, never the user's ledger.
 final class LocalModelPerformanceTests: XCTestCase {
+    @MainActor func testSpoonPhotoReplayLabelsPressWithoutPhoneSelection() async throws {
+        let root = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let sample = root.appendingPathComponent("ModelBenchSamples/nomi-screen-pork-01.jpg")
+        guard FileManager.default.fileExists(atPath: sample.path),
+              Bundle.main.url(forResource: "ChineseFood", withExtension: "mlmodelc") != nil else {
+            throw XCTSkip("Private spoon screen-recapture sample / evaluation model not installed")
+        }
+        let domain = "gramo.photo-replay.\(UUID())"
+        let defaults = UserDefaults(suiteName: domain)!
+        defer { defaults.removePersistentDomain(forName: domain) }
+        let store = AppStore(defaults: defaults), meal = store.ensureIntegrationMeal(), bytes = try Data(contentsOf: sample)
+        // Same archived photograph replayed twice; checks plumbing, not temporal accuracy.
+        for _ in 0..<2 {
+            XCTAssertTrue(store.receiveFrame(SpoonCameraFrame(id: UUID(), data: bytes, timestamp: Date(), deviceID: "50F7FAC13DE8")))
+            for _ in 0..<750 {
+                if !store.automaticRecognitionBusy { break }
+                try await Task.sleep(for: .milliseconds(20))
+            }
+            XCTAssertFalse(store.automaticRecognitionBusy)
+        }
+        XCTAssertEqual(store.todayBiteCount, 0)
+        let event = NomiButtonEvent(v: 1, type: "bite", event: "0123456789abcdef-00000001", device: "50F7FAC13DE8", meal: meal, at: Date().timeIntervalSince1970*1000)
+        store.receiveButton(event); store.receiveButton(event)
+        XCTAssertEqual(store.todayBiteCount, 1)
+        XCTAssertEqual(store.latestIntake?.dish?.classID, "77")
+        XCTAssertEqual(store.latestIntake?.automaticDish, true)
+        XCTAssertNil(store.latestIntake?.estimatedKcal)
+        print("AUTOMATIC_DISH_REPLAY source=archived_spoon_screen_photo class=\(store.latestIntake?.dish?.classID ?? "nil") confidence=\(store.latestIntake?.dish?.confidence ?? -1) bites=\(store.todayBiteCount) kcal=nil")
+    }
     func testLocalModelParityAndLatency() async throws {
         let root = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let folder = root.appendingPathComponent("ModelBenchSamples")

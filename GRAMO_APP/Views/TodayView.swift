@@ -36,7 +36,7 @@ struct TodayView: View {
                     HStack(spacing: 0) {
                         Metric(value: "\(store.todayBiteCount)", unit: "口", title: "今日已记录").accessibilityIdentifier("home-bites")
                         Rectangle().fill(Palette.line).frame(width: 1, height: 32).padding(.horizontal, 24)
-                        Metric(value: store.state.hideCalories || store.todayIntakes.isEmpty ? "—" : String(format: "%.0f", store.daily.kcal), unit: "kcal", title: "已计入 · 估算").accessibilityIdentifier("home-calories")
+                        Metric(value: store.state.hideCalories || !store.todayIntakes.contains(where: { $0.estimatedKcal != nil }) ? "—" : String(format: "%.0f", store.daily.kcal), unit: "kcal", title: "已计入 · 估算").accessibilityIdentifier("home-calories")
                     }.padding(.top, 8)
                 }.padding(24).background(LinearGradient(colors: [.white, Color(white: 0.94)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 28))
                 PrimaryButton(title: store.activeIntegrationMealID == nil ? "开始用餐" : "继续本餐", identifier: "start-meal") { mealOpen = true }
@@ -48,7 +48,7 @@ struct TodayView: View {
                                 Text(store.t("按自己的节奏")).font(.system(size: 17, weight: .medium))
                                 Text(store.t(store.settings.dailyGoal.map { String(format: "每日目标  %.0f kcal", $0) } ?? "设定你的每日目标"))
                                     .font(.system(size: 13)).foregroundStyle(Palette.secondary)
-                                if store.daily.pending > 0 { Text(store.t("还有 \(store.daily.pending) 口待完善")).font(.system(size: 12)).foregroundStyle(Palette.secondary) }
+                                if store.daily.pending > 0 { Text("\(store.daily.pending) " + store.t("口已记录，尚无热量估算")).font(.system(size: 12)).foregroundStyle(Palette.secondary) }
                             }
                             Spacer(minLength: 0)
                             Image(systemName: "chevron.right").font(.system(size: 11)).foregroundStyle(Palette.tertiary)

@@ -1,0 +1,254 @@
+{
+  "created_utc": "2026-11-19T04:52:04.643496+00:00",
+  "catalog_sha256": "f61a5fed85a96c38a39bad6f4551a54e66f7632f480ea3a6a0c3c9c353631425",
+  "unique_candidates": 345,
+  "downloaded": 181,
+  "unique_file_hashes": 181,
+  "label_conflicts": 2,
+  "approved_for_training": 0,
+  "coverage": {
+    "mapo_tofu": {
+      "category_files_examined": 60,
+      "downloaded": 10,
+      "name_zh": "麻婆豆腐",
+      "cuisines": [
+        "川菜"
+      ]
+    },
+    "kung_pao_chicken": {
+      "category_files_examined": 60,
+      "downloaded": 10,
+      "name_zh": "宫保鸡丁",
+      "cuisines": [
+        "川菜"
+      ]
+    },
+    "twice_cooked_pork": {
+      "category_files_examined": 18,
+      "downloaded": 10,
+      "name_zh": "回锅肉",
+      "cuisines": [
+        "川菜"
+      ]
+    },
+    "suan_cai_yu": {
+      "category_files_examined": 6,
+      "downloaded": 6,
+      "name_zh": "酸菜鱼",
+      "cuisines": [
+        "川菜"
+      ]
+    },
+    "beef_chow_fun": {
+      "category_files_examined": 7,
+      "downloaded": 7,
+      "name_zh": "干炒牛河",
+      "cuisines": [
+        "粤菜"
+      ]
+    },
+    "claypot_rice": {
+      "category_files_examined": 34,
+      "downloaded": 10,
+      "name_zh": "煲仔饭",
+      "cuisines": [
+        "粤菜"
+      ]
+    },
+    "gu_lou_juk": {
+      "category_files_examined": 11,
+      "downloaded": 10,
+      "name_zh": "咕噜肉",
+      "cuisines": [
+        "粤菜"
+      ]
+    },
+    "dezhou_chicken": {
+      "category_files_examined": 8,
+      "downloaded": 8,
+      "name_zh": "德州扒鸡",
+      "cuisines": [
+        "鲁菜"
+      ]
+    },
+    "tangcu_liyu": {
+      "category_files_examined": 2,
+      "downloaded": 2,
+      "name_zh": "糖醋鲤鱼",
+      "cuisines": [
+        "鲁菜"
+      ]
+    },
+    "bazirou": {
+      "category_files_examined": 6,
+      "downloaded": 6,
+      "name_zh": "把子肉",
+      "cuisines": [
+        "鲁菜"
+      ]
+    },
+    "yangzhou_fried_rice": {
+      "category_files_examined": 30,
+      "downloaded": 10,
+      "name_zh": "扬州炒饭",
+      "cuisines": [
+        "苏菜"
+      ]
+    },
+    "squirrel_fish": {
+      "category_files_examined": 8,
+      "downloaded": 8,
+      "name_zh": "松鼠桂鱼",
+      "cuisines": [
+        "苏菜"
+      ]
+    },
+    "beggars_chicken": {
+      "category_files_examined": 6,
+      "downloaded": 6,
+      "name_zh": "叫花鸡",
+      "cuisines": [
+        "苏菜",
+        "浙菜"
+      ]
+    },
+    "dongpo_pork": {
+      "category_files_examined": 23,
+      "downloaded": 10,
+      "name_zh": "东坡肉",
+      "cuisines": [
+        "浙菜"
+      ]
+    },
+    "west_lake_fish": {
+      "category_files_examined": 8,
+      "downloaded": 8,
+      "name_zh": "西湖醋鱼",
+      "cuisines": [
+        "浙菜"
+      ]
+    },
+    "drunken_chicken": {
+      "category_files_examined": 4,
+      "downloaded": 4,
+      "name_zh": "醉鸡",
+      "cuisines": [
+        "浙菜"
+      ]
+    },
+    "buddha_jumps": {
+      "category_files_examined": 11,
+      "downloaded": 10,
+      "name_zh": "佛跳墙",
+      "cuisines": [
+        "闽菜"
+      ]
+    },
+    "lychee_pork": {
+      "category_files_examined": 4,
+      "downloaded": 4,
+      "name_zh": "荔枝肉",
+      "cuisines": [
+        "闽菜"
+      ]
+    },
+    "ginger_duck": {
+      "category_files_examined": 8,
+      "downloaded": 8,
+      "name_zh": "姜母鸭",
+      "cuisines": [
+        "闽菜"
+      ]
+    },
+    "chili_fish_head": {
+      "category_files_examined": 8,
+      "downloaded": 8,
+      "name_zh": "剁椒鱼头",
+      "cuisines": [
+        "湘菜"
+      ]
+    },
+    "chili_pork": {
+      "category_files_examined": 13,
+      "downloaded": 10,
+      "name_zh": "辣椒炒肉",
+      "cuisines": [
+        "湘菜"
+      ]
+    },
+    "lei_lajiao_pidan": {
+      "category_files_examined": 2,
+      "downloaded": 2,
+      "name_zh": "擂辣椒皮蛋",
+      "cuisines": [
+        "湘菜"
+      ]
+    },
+    "stinky_mandarin_fish": {
+      "category_files_examined": 1,
+      "downloaded": 1,
+      "name_zh": "臭鳜鱼",
+      "cuisines": [
+        "徽菜"
+      ]
+    },
+    "huainan_beef_soup": {
+      "category_files_examined": 6,
+      "downloaded": 6,
+      "name_zh": "淮南牛肉汤",
+      "cuisines": [
+        "徽菜"
+      ]
+    },
+    "xiao_county_dough": {
+      "category_files_examined": 12,
+      "downloaded": 7,
+      "name_zh": "萧县面皮",
+      "cuisines": [
+        "徽菜"
+      ]
+    }
+  },
+  "errors": 2,
+  "time_budget_reached": true,
+  "seconds": 900.5,
+  "limitations": [
+    "Category labels are weak labels; all images require review.",
+    "Suggested author/hash groups are conservative, not proven plate identities.",
+    "License metadata is preserved, not a blanket commercial clearance.",
+    "A sample of eight regional cuisines, not exhaustive Chinese food coverage."
+  ],
+  "visually_excluded": 40,
+  "pending_review": 141,
+  "visual_screening_scope": "All 181 downloaded thumbnail entries screened for obvious whole-image exclusions; dish identities not fully approved.",
+  "pending_by_dish": {
+    "mapo_tofu": 8,
+    "kung_pao_chicken": 8,
+    "twice_cooked_pork": 8,
+    "suan_cai_yu": 4,
+    "beef_chow_fun": 7,
+    "claypot_rice": 10,
+    "gu_lou_juk": 6,
+    "dezhou_chicken": 4,
+    "tangcu_liyu": 2,
+    "bazirou": 3,
+    "yangzhou_fried_rice": 9,
+    "squirrel_fish": 8,
+    "beggars_chicken": 5,
+    "dongpo_pork": 8,
+    "west_lake_fish": 5,
+    "drunken_chicken": 4,
+    "buddha_jumps": 9,
+    "lychee_pork": 3,
+    "ginger_duck": 8,
+    "chili_fish_head": 8,
+    "chili_pork": 9,
+    "lei_lajiao_pidan": 2,
+    "stinky_mandarin_fish": 1,
+    "huainan_beef_soup": 2,
+    "xiao_county_dough": 0
+  },
+  "manifest_sha256": "0866305a1bcaf1161cda2d17327706364670788916ba7876d0d915de05c0e73b",
+  "referenced_image_bytes": 32825786,
+  "validation": "181 image checksums and decode checks passed; all remain excluded from automatic training."
+}

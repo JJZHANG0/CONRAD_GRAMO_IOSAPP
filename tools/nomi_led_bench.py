@@ -24,8 +24,9 @@ def main():
             if line.startswith('[led]'):driver.append(line)
             try:v=json.loads(line)
             except ValueError:continue
-            if v.get('protocol')=='nomi1' and v.get('fw') in ['0.4.0-integration','0.4.1-integration']:info=v;break
+            if v.get('v')==1 and v.get('protocol')=='nomi1' and v.get('fw') in ['0.4.0-integration','0.4.1-integration','0.4.2-integration']:info=v;break
         assert info is not None, 'Verified Nomi capabilities not received; no command sent'
+        assert info.get('led') is True, 'Device reports LED unavailable; no command sent'
         command={'v':1,'id':str(uuid.uuid4()),'op':'led','color':a.color}
         port.write((json.dumps(command,separators=(',',':'))+'\n').encode());port.flush()
         deadline=time.monotonic()+8;reply=None
@@ -36,6 +37,6 @@ def main():
             if v.get('id')==command['id']:reply=v;break
         evidence={'time':time.time(),'firmware':info['fw'],'driver_boot':driver,'command':command,'reply':reply,'optical_verified':False}
         a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(evidence,indent=2));print(json.dumps(evidence,indent=2))
-        assert reply and reply.get('type')=='led' and reply.get('applied') is True, 'No successful application ACK'
+        assert reply and reply.get('v')==1 and reply.get('type')=='led' and reply.get('color')==a.color and reply.get('applied') is True, 'No matching successful application ACK'
     finally:port.close()
 if __name__=='__main__':main()

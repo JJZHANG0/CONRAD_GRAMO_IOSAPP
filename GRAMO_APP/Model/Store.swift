@@ -31,6 +31,24 @@ final class AppStore {
     var appActive = true
     var previewOwners = Set<String>()
     private var recentFrames: [SpoonCameraFrame] = []
+    private var dishObservations: [DishObservation] = []
+    private var queuedRecognition: SpoonCameraFrame?
+    private var recognitionTask: Task<Void, Never>?
+    private var recognitionGeneration = UUID()
+    private var recognitionMeal: String?
+    var automaticDish: FoodCandidate?
+    var automaticRecognitionUnavailable = false
+    var automaticRecognitionBusy: Bool { recognitionTask != nil }
+    @ObservationIgnored var recognizeSpoonFrame: (SpoonCameraFrame) async throws -> [FoodCandidate] = {
+        try await FoodRecognizer.shared.recognizeFrame($0)
+    }
+    var displayedDish: FoodCandidate? { currentDish ?? automaticDish }
+    var automaticDishStatus: String {
+        if currentDish != nil { return "已锁定菜品，可随时恢复自动识别" }
+        if automaticRecognitionUnavailable { return "识别暂不可用，短按仍会保存这一口" }
+        if automaticDish != nil { return "自动识别 · 菜名可能有误，可轻点修正" }
+        return "镜头看向食物，菜名会自动关联；短按即可记录"
+    }
     var activeIntegrationMealID: String? {
         state.meals.first { $0.id == state.recordingMealId && $0.status == .recording }?.id
     }
@@ -400,6 +418,7 @@ final class AppStore {
     }
 
     func deleteLocalMeals() {
+        resetAutomaticRecognition(); recentFrames = []
         state = Logic.clearMeals(state)
         var value = settings; value.candidates = []; value.currentDishID = nil; value.mealID = nil; state.integration = value
         defaults.removeObject(forKey: Self.storageKey + ".pre-integration-backup")
@@ -410,6 +429,7 @@ final class AppStore {
     }
 
     func resetRecords() {
+        resetAutomaticRecognition(); recentFrames = []
         finishTask?.cancel()
         state = Logic.createInitial(Date())
         persist()
@@ -443,6 +463,9 @@ final class AppStore {
         let date = ZWFormat.formatISODate(now)
         if todayISO != date { todayISO = date }
         daily = IntakeLedger.day(state.meals, now: now)
+        if let meal = activeIntegrationMealID, let frame = spoonFrame {
+            automaticDish = AutomaticDish.suggestion(in: dishObservations, device: frame.deviceID, meal: meal, at: now)
+        } else { automaticDish = nil }
         var transport: LEDTransport? = radio.canControlLED ? radio : nil
         #if DEBUG
         if isSimulation { transport = mockDevice }
@@ -465,6 +488,7 @@ final class AppStore {
         spoonFrame = frame
         recentFrames.append(frame)
         recentFrames = Array(recentFrames.filter { frame.timestamp.timeIntervalSince($0.timestamp) <= 20 }.suffix(12))
+        queueDishRecognition(frame)
         var changed = false
         // Add the first post-confirmation frame to the same record, without replacing corrections.
         for mi in state.meals.indices {
@@ -479,6 +503,64 @@ final class AppStore {
             }
         }
         if changed { persist() }; return true
+    }
+    private func resetAutomaticRecognition() {
+        recognitionGeneration = UUID(); recognitionTask?.cancel(); recognitionTask = nil
+        queuedRecognition = nil; dishObservations = []; automaticDish = nil
+        automaticRecognitionUnavailable = false; recognitionMeal = nil
+    }
+    func resumeAutomaticDish() {
+        var value = settings; value.currentDishID = nil; value.currentDishSince = nil
+        state.integration = value; persist()
+    }
+    private func queueDishRecognition(_ frame: SpoonCameraFrame) {
+        guard let meal = activeIntegrationMealID,
+              let started = state.meals.first(where: { $0.id == meal })?.startedAt,
+              frame.timestamp.timeIntervalSince1970 * 1000 >= started,
+              abs(frame.timestamp.timeIntervalSinceNow) <= AutomaticDish.maximumAge else { return }
+        if recognitionMeal != meal { resetAutomaticRecognition(); recognitionMeal = meal }
+        // Bound work to one inference plus the newest waiting frame, never a growing queue.
+        queuedRecognition = frame
+        guard recognitionTask == nil else { return }
+        let generation = recognitionGeneration
+        recognitionTask = Task { [weak self] in
+            guard let self else { return }
+            while let next = self.queuedRecognition {
+                self.queuedRecognition = nil
+                let result: [FoodCandidate]
+                var unavailable = false
+                do { result = try await self.recognizeSpoonFrame(next) }
+                catch { result = []; unavailable = true }
+                guard !Task.isCancelled, generation == self.recognitionGeneration,
+                      meal == self.activeIntegrationMealID else {
+                    if generation == self.recognitionGeneration { self.recognitionTask = nil }
+                    return
+                }
+                self.automaticRecognitionUnavailable = unavailable
+                self.dishObservations.removeAll { $0.frameID == next.id || next.timestamp.timeIntervalSince($0.timestamp) > 20 }
+                self.dishObservations.append(DishObservation(frameID: next.id, timestamp: next.timestamp,
+                    deviceID: next.deviceID, mealID: meal, candidates: result))
+                self.dishObservations = Array(self.dishObservations.suffix(12))
+                self.enrichAutomaticBites(meal: meal, frame: next)
+                self.refreshDay()
+            }
+            self.recognitionTask = nil
+        }
+    }
+    private func enrichAutomaticBites(meal: String, frame: SpoonCameraFrame) {
+        guard let mi = state.meals.firstIndex(where: { $0.id == meal }) else { return }
+        var changed = false
+        for fi in state.meals[mi].foods.indices {
+            guard var entry = state.meals[mi].foods[fi].evidence, !entry.corrected,
+                  entry.deviceID == frame.deviceID, frame.timestamp <= entry.timestamp,
+                  entry.timestamp.timeIntervalSince(frame.timestamp) <= AutomaticDish.maximumAge,
+                  entry.dish == nil || entry.automaticDish == true else { continue }
+            let suggestion = AutomaticDish.suggestion(in: dishObservations, device: entry.deviceID, meal: meal, at: entry.timestamp)
+            guard entry.dish != suggestion else { continue }
+            entry.dish = suggestion; entry.automaticDish = suggestion != nil
+            state.meals[mi].foods[fi] = entry.food; changed = true
+        }
+        if changed { persist() }
     }
     private func retainFrame(_ frame: SpoonCameraFrame, phase: String) -> IntakeFrame? {
         let relative = "BiteFrames/\(frame.id.uuidString).jpg"
@@ -496,15 +578,17 @@ final class AppStore {
             buttonMessage = "已忽略非用餐时段短按；未增加记录"; return true
         }
         let selected = settings.currentDishSince.map { event.timestamp >= $0 } == true && event.meal == activeIntegrationMealID ? currentDish : nil
+        let inferred = AutomaticDish.suggestion(in: dishObservations, device: event.device, meal: event.meal, at: event.timestamp)
         let nearbyFrames = recentFrames.filter { $0.deviceID == event.device && $0.timestamp <= event.timestamp && event.timestamp.timeIntervalSince($0.timestamp) <= 12 }
-            .suffix(4)
+            .suffix(12)
         let evidence = IntakeEvidence(eventID: event.event, deviceID: event.device, timestamp: event.timestamp,
-            dish: selected, grams: nil, kcalPer100g: nil, nutritionSource: "", measurement: "实体短按确认，份量待补录",
-            confirmedEating: true, corrected: false, note: "吃完离口后短按；附近关键帧仅供核对，不能单独证明食物或克数。", frames: [])
+            dish: selected ?? inferred, grams: nil, kcalPer100g: nil, nutritionSource: "", measurement: "实体短按记录；尚无可靠份量测量",
+            confirmedEating: true, corrected: false, note: "短按确认吃完；自动菜名为近期画面的分类推测，不代表已检测勺内食物、嘴唇或重量。", frames: [], automaticDish: selected == nil && inferred != nil)
         saveIntake(evidence, mealID: event.meal)
-        buttonMessage = "已记录一口 · 菜名或份量缺失时待确认"; flash("已记录 · 第 \(todayBiteCount) 口")
+        buttonMessage = "已记录一口，菜名会自动关联"; flash("已记录 · 第 \(todayBiteCount) 口")
+        let generation = recognitionGeneration
         Task { [weak self] in
-            guard let self else { return }
+            guard let self, generation == self.recognitionGeneration else { return }
             let frames = nearbyFrames.compactMap { self.retainFrame($0, phase: "before") }
             // Merge with the current record: never resurrect a deleted bite or undo a correction.
             if !frames.isEmpty, let mi = self.state.meals.firstIndex(where: { $0.id == event.meal }),
@@ -656,6 +740,7 @@ final class AppStore {
     #if DEBUG
     func switchSimulation(_ enabled: Bool, using simulationDefaults: UserDefaults? = nil) {
         guard enabled != isSimulation else { return }
+        resetAutomaticRecognition()
         finishTask?.cancel(); radio.disconnect(); mockDevice = nil
         isSimulation = enabled
         defaults = enabled ? (simulationDefaults ?? UserDefaults(suiteName: simulationDomain)!) : productionDefaults
@@ -668,6 +753,7 @@ final class AppStore {
     }
     func resetSimulation() {
         guard isSimulation else { return }
+        resetAutomaticRecognition()
         finishTask?.cancel()
         defaults.removePersistentDomain(forName: simulationDomain)
         state = Logic.createInitial(Date()); bag = []; deviceReady = false; led = LEDSync()

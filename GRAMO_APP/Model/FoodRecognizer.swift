@@ -62,6 +62,10 @@ actor FoodRecognizer {
         return loaded
     }
     func warmUp() throws { _ = try load() }
+    func recognizeFrame(_ frame: SpoonCameraFrame) throws -> [FoodCandidate] {
+        guard let image = UIImage(data: frame.data) else { throw RecognitionError.invalidImage }
+        return try recognize(image, source: "勺载相机自动识别", imageID: frame.id.uuidString).candidates
+    }
     func preparePhoto(_ image: UIImage, directory: URL) throws -> (image: UIImage, id: String) {
         let upright = Self.upright(image)
         guard let data = upright.jpegData(compressionQuality: 0.9) else { throw RecognitionError.invalidImage }

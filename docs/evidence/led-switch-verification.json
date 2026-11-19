@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-19",
+  "firmware": "0.4.2-integration",
+  "transport": "documented nomi1 USB serial command",
+  "port": "/dev/cu.usbmodem2101",
+  "user_report": "User confirmed the physical hardware switch is on; strip remains dark for both green and red commands",
+  "green": {
+    "time": 1795066689.883616,
+    "firmware": "0.4.2-integration",
+    "driver_boot": [
+      "[led] GPIO4 RMT initialized and off frame transmitted: OK"
+    ],
+    "command": {
+      "v": 1,
+      "id": "d97764f1-beae-4910-99b2-b9d8c454f006",
+      "op": "led",
+      "color": "green"
+    },
+    "reply": {
+      "id": "d97764f1-beae-4910-99b2-b9d8c454f006",
+      "type": "led",
+      "color": "green",
+      "applied": true,
+      "driver": "rmt",
+      "tx": true,
+      "v": 1
+    },
+    "optical_verified": false,
+    "user_observation": "灯带仍不亮",
+    "observation_source": "User response to green verification question"
+  },
+  "red": {
+    "time": 1795067194.154457,
+    "firmware": "0.4.2-integration",
+    "driver_boot": [
+      "[led] GPIO4 RMT initialized and off frame transmitted: OK"
+    ],
+    "command": {
+      "v": 1,
+      "id": "ff98f3d5-8fa8-49d9-9fc3-5e229edde35a",
+      "op": "led",
+      "color": "red"
+    },
+    "reply": {
+      "id": "ff98f3d5-8fa8-49d9-9fc3-5e229edde35a",
+      "type": "led",
+      "color": "red",
+      "applied": true,
+      "driver": "rmt",
+      "tx": true,
+      "v": 1
+    },
+    "optical_verified": false,
+    "user_observation": "灯带仍不亮；打开的是硬件开关",
+    "observation_source": "User response to red verification and switch-type question",
+    "observation_status": "confirmed dark by user"
+  },
+  "app_validation": {
+    "suite": "GRAMO_APPTests/IntegrationTests",
+    "passed": 12,
+    "failed": 0,
+    "platform": "iOS Simulator",
+    "log": "artifacts/led-switch-check/app-tests.log"
+  },
+  "changes": [
+    "Bench tool accepts verified 0.4.2 capabilities and validates protocol version, LED capability, ACK version and color"
+  ],
+  "firmware_flashed": false,
+  "physical_acceptance_passed": false,
+  "remaining": [
+    "Measure LED VDD/GND with switch enabled",
+    "Check shared ground and GPIO4/D3 to first DIN continuity and direction",
+    "Verify actual installed LED part and rated voltage before changing supply or driver"
+  ]
+}

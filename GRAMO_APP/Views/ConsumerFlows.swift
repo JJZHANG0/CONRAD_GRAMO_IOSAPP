@@ -76,7 +76,7 @@ struct DeviceView: View {
                 }
                 Surface {
                     VStack(alignment: .leading,spacing: 20) {
-                        instruction("hand.tap", "吃完一口，轻按一下", "开启用餐记录后，离口再短按。信息不全时，稍后补充就好。")
+                        instruction("hand.tap", "吃完一口，轻按一下", "开启本餐，让镜头看向食物。吃完短按，菜名自动关联，无需逐口填写。")
                         Hairline()
                         instruction("power", "长按开关，不会误记", "长按约 1.5 秒并松手进入休眠，再次长按唤醒。")
                         Hairline()
@@ -149,9 +149,9 @@ struct MealExperienceView: View {
                             Image(systemName: "fork.knife").font(.system(size: 35,weight: .ultraLight)).foregroundStyle(.white.opacity(0.35))
                         }.foregroundStyle(.white)
                         HStack {
-                            Text(store.t(store.state.hideCalories ? "热量已隐藏" : (entries.compactMap(\.estimatedKcal).isEmpty ? "热量待完善" : String(format: "约 %.0f kcal", entries.compactMap(\.estimatedKcal).reduce(0,+))))).font(.system(size: 16,weight: .medium))
+                            Text(store.t(store.state.hideCalories ? "热量已隐藏" : (entries.compactMap(\.estimatedKcal).isEmpty ? "暂无可靠热量估算" : String(format: "约 %.0f kcal", entries.compactMap(\.estimatedKcal).reduce(0,+))))).font(.system(size: 16,weight: .medium))
                             Spacer()
-                            Text(store.t("\(entries.filter { $0.estimatedKcal == nil }.count) 口待完善")).font(.system(size: 12))
+                            Text(store.t("短按即记录，无需逐口填写")).font(.system(size: 12))
                         }.foregroundStyle(.white.opacity(0.7))
                     }
                 }
@@ -170,13 +170,17 @@ struct MealExperienceView: View {
                     Surface {
                         HStack {
                             VStack(alignment: .leading,spacing: 8) {
-                                Text(store.t("当前菜品")).font(.system(size: 11)).foregroundStyle(Palette.secondary)
-                                Text(store.currentDish?.displayName(in: store.language) ?? store.t("这餐吃点什么？")).font(.system(size: 20,weight: .medium))
+                                Text(store.t(store.currentDish == nil ? "自动识别菜品" : "当前菜品")).font(.system(size: 11)).foregroundStyle(Palette.secondary)
+                                Text(store.displayedDish?.displayName(in: store.language) ?? store.t("等待清晰的食物画面")).font(.system(size: 20,weight: .medium))
+                                Text(store.t(store.automaticDishStatus)).font(.system(size: 12)).foregroundStyle(Palette.secondary)
                             }
-                            Spacer(); Text(store.t(store.currentDish == nil ? "选菜" : "换一道")).font(.system(size: 13)); Image(systemName: "chevron.right").font(.system(size: 10))
+                            Spacer(); Text(store.t("修正")).font(.system(size: 13)); Image(systemName: "chevron.right").font(.system(size: 10))
                         }
                     }
                 }.buttonStyle(ProductPressStyle()).accessibilityIdentifier("select-current-dish")
+                if store.currentDish != nil {
+                    Button(store.t("恢复自动识别")) { store.resumeAutomaticDish() }.font(.system(size: 13)).accessibilityIdentifier("resume-auto-dish")
+                }
                 if !store.settings.candidates.isEmpty {
                     ScrollView(.horizontal,showsIndicators: false) {
                         HStack {
@@ -193,9 +197,11 @@ struct MealExperienceView: View {
                 if let entry = entries.first {
                     BiteRow(entry: entry,index: entries.count) { edit = entry }
                 } else {
-                    Text(store.t("第一口之后，这里会留下时间、菜品和份量。暂时不清楚的部分，可以稍后补充。"))
+                    Text(store.t("吃完离口后短按即可。时间与口次立即保存，近期画面自动帮助识别菜品。"))
                         .font(.system(size: 14)).foregroundStyle(Palette.secondary).lineSpacing(5)
                 }
+                Text(store.t("菜名是画面推测，认错时再修正。未获得可靠份量前，不显示克数和热量。"))
+                    .font(.system(size: 12)).foregroundStyle(Palette.secondary)
                 #if DEBUG
                 if store.isSimulation {
                     Button(store.t("模拟餐勺控制")) { mockControls = true }.font(.system(size: 13)).frame(maxWidth: .infinity).padding(14).background(.white,in: Capsule()).accessibilityIdentifier("open-mock-controls")
@@ -237,12 +243,13 @@ struct BiteRow: View {
                 HStack(alignment: .top,spacing: 14) {
                     Text(store.t(String(format: "%02d",index))).font(.system(size: 13,weight: .medium)).monospacedDigit().foregroundStyle(Palette.tertiary).padding(.top,3)
                     VStack(alignment: .leading,spacing: 8) {
-                        Text(entry.dish?.displayName(in: store.language) ?? store.t("菜品待完善")).font(.system(size: 17,weight: .medium))
-                        Text(store.t("\(ZWFormat.formatClock(entry.timestamp)) · \(entry.grams.map { String(format: "约 %.1f g",$0) } ?? "份量待完善")"))
+                        Text(entry.dish?.displayName(in: store.language) ?? store.t("已记录这一口")).font(.system(size: 17,weight: .medium))
+                        if entry.automaticDish == true { Text(store.t("自动识别 · 菜名待核对")).font(.system(size: 11)).foregroundStyle(Palette.secondary) }
+                        Text(ZWFormat.formatClock(entry.timestamp) + " · " + store.t(entry.grams.map { String(format: "约 %.1f g",$0) } ?? "份量尚未测得"))
                             .font(.system(size: 12)).foregroundStyle(Palette.secondary)
                     }
                     Spacer(minLength: 0)
-                    Text(store.t(store.state.hideCalories ? "—" : entry.estimatedKcal.map { String(format: "%.0f kcal",$0) } ?? "待完善")).font(.system(size: 13,weight: .medium))
+                    Text(store.t(store.state.hideCalories ? "—" : entry.estimatedKcal.map { String(format: "%.0f kcal",$0) } ?? "—")).font(.system(size: 13,weight: .medium))
                 }
             }
         }.buttonStyle(ProductPressStyle()).accessibilityIdentifier("bite-\(entry.eventID)")
@@ -264,7 +271,7 @@ struct MealDetailView: View {
                     Surface {
                         HStack {
                             Metric(value: "\(entries.count)",unit: "口",title: "进食记录")
-                            Metric(value: store.state.hideCalories ? "—" : (entries.isEmpty ? "—" : String(format: "%.0f",entries.compactMap(\.estimatedKcal).reduce(0,+))),unit: "kcal",title: "已计入 · 估算")
+                            Metric(value: store.state.hideCalories ? "—" : (entries.compactMap(\.estimatedKcal).isEmpty ? "—" : String(format: "%.0f",entries.compactMap(\.estimatedKcal).reduce(0,+))),unit: "kcal",title: "已计入 · 估算")
                             Metric(value: "\(meal.durationSec/60)",unit: "分钟",title: "用餐时长")
                         }
                     }
