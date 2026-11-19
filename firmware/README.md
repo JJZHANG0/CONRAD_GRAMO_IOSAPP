@@ -51,7 +51,7 @@ python -m esptool --chip esp32s3 --port /dev/cu.usbmodem2101 --baud 115200 \
 
 ## 2026-11-19：0.4.3 相机预览优化
 
-已离线编译并仅烧录app0，esptool写后hash通过。镜像1,594,880字节，`artifacts/nomi-firmware/nomi-0.4.3.bin` SHA256 `3a22e9ca249e7bf7e5d903cf492501b506fbcab209d2a4f91f25e00f057446c8`。烧录前读取app0前16KB，与保留的0.4.2镜像相同；原8MB备份SHA256再次核验一致。未改NVS、分区表或引导。USB启动日志已确认0.4.3、OV3660初始化、NOMI01广播及button_status回执（无新增口次）。具体传输参数见协议文档；iPhone端延迟尚待现场测量。
+已离线编译并仅烧录app0，esptool写后hash通过。镜像1,594,880字节，`artifacts/nomi-firmware/nomi-0.4.3.bin` SHA256 `3a22e9ca249e7bf7e5d903cf492501b506fbcab209d2a4f91f25e00f057446c8`。烧录前读取app0前16KB，与保留的0.4.2镜像相同；原8MB备份SHA256再次核验一致。未改NVS、分区表或引导。USB启动日志已确认0.4.3、OV3660初始化、NOMI01广播及button_status回执（无新增口次）。具体传输参数见协议文档；iPhone前台传输已补测：三个窗口90张全部接收成功，平均4.65帧/秒；请求到收齐中位数101.12ms，非光学屏幕延迟，详情见hardware-integration.md。
 
 本轮快速回退到已验证按钮的0.4.2（只写app0，执行前停止串口监视器）：
 

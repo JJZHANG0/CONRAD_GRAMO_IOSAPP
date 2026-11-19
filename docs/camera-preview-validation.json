@@ -1,0 +1,47 @@
+{
+  "firmware": "0.4.3-integration",
+  "client": "physical iPhone 18 Pro Max, foreground camera preview",
+  "sampleCount": 90,
+  "sampling": "three non-overlapping last-30-frame windows, 12 seconds apart; not every frame during interval",
+  "first": "2026-11-19T07:11:10Z",
+  "last": "2026-11-19T07:11:42Z",
+  "allAccepted": true,
+  "resolution": [
+    320,
+    240
+  ],
+  "meanReceiveFPS": 4.65,
+  "metricsMs": {
+    "requestToReceiveMs": {
+      "median": 101.12,
+      "p95": 135.21,
+      "max": 161.12
+    },
+    "frameIntervalMs": {
+      "median": 210.95,
+      "p95": 244.79,
+      "max": 271.54
+    },
+    "approximateFrameAgeMs": {
+      "median": 107.26,
+      "p95": 137.09,
+      "max": 155.43
+    },
+    "decodeAndStoreMs": {
+      "median": 0.11,
+      "p95": 0.6,
+      "max": 0.67
+    }
+  },
+  "limitations": [
+    "No optical screen-to-scene latency measurement",
+    "No matched original-firmware baseline",
+    "No food accuracy claim; current camera scene is not food",
+    "UI test runner blocked by free developer profile installed-app limit"
+  ],
+  "inputSHA256": {
+    "iphone-043-visible-1.json": "39c7dd527bd3615efd916d99c369ab0b4ffff063eb6b1d4188945cc4910eadfa",
+    "iphone-043-visible-2.json": "045f937e5f77bd939102774b9a29fb81cf7119ef1936862718287e792f286b12",
+    "iphone-043-visible-3.json": "babdd8ef662e41852fce48e07f956e89a761996ec21fb909b4024dadcffcb929"
+  }
+}

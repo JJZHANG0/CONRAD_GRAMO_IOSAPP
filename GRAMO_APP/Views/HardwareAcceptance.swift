@@ -14,15 +14,19 @@ extension View {
 private struct HardwareAcceptanceModifier: ViewModifier {
     let store: AppStore
     @State private var showMeal = false
+    @State private var showCamera = false
+    private var cameraOnly: Bool { ProcessInfo.processInfo.arguments.contains("-camera-acceptance") }
+    private var enabled: Bool { cameraOnly || ProcessInfo.processInfo.arguments.contains("-hardware-acceptance") }
     func body(content: Content) -> some View {
         content.task {
-            guard ProcessInfo.processInfo.arguments.contains("-hardware-acceptance"), !store.isSimulation else { return }
+            guard enabled, !store.isSimulation else { return }
             UIApplication.shared.isIdleTimerDisabled = true
             store.startScan()
             var selected = false
             for _ in 0..<80 {
                 if Task.isCancelled { return }
-                if store.deviceReady, store.nomiCapabilities?.button == true {
+                if cameraOnly, store.deviceReady, store.nomiCapabilities?.camera == true { showCamera = true; return }
+                if !cameraOnly, store.deviceReady, store.nomiCapabilities?.button == true {
                     _ = store.ensureIntegrationMeal(); showMeal = true; return
                 }
                 if !selected, let device = store.nearby.first(where: {
@@ -34,7 +38,9 @@ private struct HardwareAcceptanceModifier: ViewModifier {
             }
             store.flash("未能连接餐勺，请在设备页重新连接。")
         }.onDisappear {
-            if ProcessInfo.processInfo.arguments.contains("-hardware-acceptance") { UIApplication.shared.isIdleTimerDisabled = false }
+            if enabled { UIApplication.shared.isIdleTimerDisabled = false }
+        }.sheet(isPresented: $showCamera) {
+            NavigationStack { CameraPreviewView() }
         }.sheet(isPresented: $showMeal) {
             NavigationStack {
                 MealExperienceView()

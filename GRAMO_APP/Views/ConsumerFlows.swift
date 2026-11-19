@@ -105,8 +105,11 @@ struct CameraPreviewView: View {
         VStack(spacing: 24) {
             if let frame = store.spoonFrame, let image = store.spoonPreviewImage {
                 Image(uiImage: image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 22))
+                    .accessibilityIdentifier("spoon-preview-image")
                 Text(store.t(store.cameraStatus.contains("中断") ? "画面已暂停，重新连接后会恢复。" : "餐勺画面 · \(frame.timestamp.formatted(date: .omitted,time: .standard))"))
                     .font(.system(size: 13)).foregroundStyle(Palette.secondary)
+                    .accessibilityIdentifier("spoon-preview-time")
+                    .accessibilityValue(String(frame.timestamp.timeIntervalSince1970))
             } else {
                 ProductEmptyState(symbol: "camera",title: store.isSimulation ? "模拟模式没有实拍画面" : "正在等待餐勺画面",message: store.isSimulation ? "可在选菜时使用相册中的照片。" : "连接后请稍等片刻，画面会自动刷新。")
             }

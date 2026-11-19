@@ -68,3 +68,8 @@ frame 元数据增加 `age_ms`：从相机首个DMA缓冲时间戳到生成帧�
 App只保持一个传输请求；新固件预览成功后100ms请求下一帧，错误后1秒重试，预览组帧5秒超时。主动抓拍仍30秒超时，预览进行中收到抓拍请求则排队一个抓拍，完成当前帧后优先处理。旧固件继续原2秒调度。离开前台、停止预览且没有活动餐次、或断线时不继续发送预览。视图复用解码图片；Debug完整证据快照最多每3秒写一次。
 
 Debug `Documents/CameraPerformance.json` 保留最近30帧：请求到收齐的时间、近似帧龄、完成帧间隔、解码与存储耗时、固件和模式。`requestToReceiveMs`不是屏幕实际显示延迟。`tools/nomi_camera_bench.py`提供独立Mac BLE传输台架，仅识别已知NOMI01设备和协议，核验CRC并在传图中发送ping；不生成口次。Mac结果不可当作iPhone结果。测试产物保留在ignored artifacts，不上传相机图片。
+
+
+### 相机独立验收入口
+
+Debug启动参数 `-camera-acceptance` 仅自动扫描/握手已知NOMI01并打开现有消费者预览页面，不新建餐次、不制造按键记录；Release不包含该入口。`PhysicalCameraAcceptanceTests`需显式设置 `TEST_RUNNER_GRAMO_CAMERA_ACCEPTANCE=1` 才运行，检查真实图片存在、帧时间更新并保留截图。2026-11-19设备测试Runner被iOS免费签名已装App名额限制阻止安装，未运行到断言，不能计为通过；实际主App已正常安装运行并输出BLE传输测量。没有删除手机上的其他App来绕开限制。
