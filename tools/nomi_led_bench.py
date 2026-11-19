@@ -24,7 +24,7 @@ def main():
             if line.startswith('[led]'):driver.append(line)
             try:v=json.loads(line)
             except ValueError:continue
-            if v.get('v')==1 and v.get('protocol')=='nomi1' and v.get('fw') in ['0.4.0-integration','0.4.1-integration','0.4.2-integration']:info=v;break
+            if v.get('v')==1 and v.get('protocol')=='nomi1' and v.get('fw') in ['0.4.0-integration','0.4.1-integration','0.4.2-integration','0.4.3-integration']:info=v;break
         assert info is not None, 'Verified Nomi capabilities not received; no command sent'
         assert info.get('led') is True, 'Device reports LED unavailable; no command sent'
         command={'v':1,'id':str(uuid.uuid4()),'op':'led','color':a.color}

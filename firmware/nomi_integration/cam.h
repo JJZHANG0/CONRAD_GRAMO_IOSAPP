@@ -40,6 +40,17 @@
 class Cam {
 public:
   bool ok = false;
+  bool previewMode = false;
+  bool setPreview(bool preview) {
+    if (preview == previewMode) return true;
+    sensor_t* sensor = esp_camera_sensor_get();
+    if (!sensor || sensor->set_framesize(sensor, preview ? FRAMESIZE_QVGA : FRAMESIZE_VGA) != 0 ||
+        sensor->set_quality(sensor, preview ? 18 : 12) != 0) return false;
+    previewMode = preview;
+    // Discard buffers captured with the previous dimensions/quality.
+    for (int i=0;i<2;++i) { auto stale=esp_camera_fb_get(); if(stale) esp_camera_fb_return(stale); }
+    return true;
+  }
 
   bool begin() {
     camera_config_t c = {};

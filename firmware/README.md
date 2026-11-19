@@ -47,3 +47,17 @@ python -m esptool --chip esp32s3 --port /dev/cu.usbmodem2101 --baud 115200 \
 ## 2026-11-19：0.4.2 按键修复
 
 只写app0，1,593,952字节，SHA256 `a57115f6289b8d00c1fc7c189e821221e5da15c697b75eb70e46ad75fc22c76a`；esptool写后hash验证通过，启动确认OV3660和NOMI01广播。原8MB备份重新校验一致；写入前读取app0前16KB，与保留的0.4.1镜像相同。460800串口读取曾中断，随后115200读取及写入成功；没有使用损坏的备份。可用原app0或已保留的`artifacts/nomi-firmware/nomi-0.4.1.bin`回退，仍只写0x10000。构建配置、签名无变更。按键改为独立5ms采样任务，协议细节见nomi-protocol.md。
+
+
+## 2026-11-19：0.4.3 相机预览优化
+
+已离线编译并仅烧录app0，esptool写后hash通过。镜像1,594,880字节，`artifacts/nomi-firmware/nomi-0.4.3.bin` SHA256 `3a22e9ca249e7bf7e5d903cf492501b506fbcab209d2a4f91f25e00f057446c8`。烧录前读取app0前16KB，与保留的0.4.2镜像相同；原8MB备份SHA256再次核验一致。未改NVS、分区表或引导。USB启动日志已确认0.4.3、OV3660初始化、NOMI01广播及button_status回执（无新增口次）。具体传输参数见协议文档；iPhone端延迟尚待现场测量。
+
+本轮快速回退到已验证按钮的0.4.2（只写app0，执行前停止串口监视器）：
+
+```sh
+python -m esptool --chip esp32s3 --port /dev/cu.usbmodem2101 --baud 115200 \
+  write-flash 0x10000 artifacts/nomi-firmware/nomi-0.4.2.bin
+```
+
+0.4.2备份SHA256 `a57115f6289b8d00c1fc7c189e821221e5da15c697b75eb70e46ad75fc22c76a`；原完整备份仍保留。没有执行回退烧录。

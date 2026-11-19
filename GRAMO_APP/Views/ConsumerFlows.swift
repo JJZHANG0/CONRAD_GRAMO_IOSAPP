@@ -103,7 +103,7 @@ struct CameraPreviewView: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(spacing: 24) {
-            if let frame = store.spoonFrame, let image = UIImage(data: frame.data) {
+            if let frame = store.spoonFrame, let image = store.spoonPreviewImage {
                 Image(uiImage: image).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 22))
                 Text(store.t(store.cameraStatus.contains("中断") ? "画面已暂停，重新连接后会恢复。" : "餐勺画面 · \(frame.timestamp.formatted(date: .omitted,time: .standard))"))
                     .font(.system(size: 13)).foregroundStyle(Palette.secondary)

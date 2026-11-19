@@ -8,6 +8,7 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 #include <esp_sleep.h>
+#include <esp_timer.h>
 #include <driver/rtc_io.h>
 #include "ButtonGesture.h"
 #include "cam.h"
@@ -17,7 +18,7 @@ static const char *CONTROL = "6C2E0005-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *INFO = "6C2E0006-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *IMAGE = "6C2E0007-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
 static const char *EVENTS = "6C2E0008-5B4A-4E3F-8D2C-1A0B9E8D7C6B";
-static const char *VERSION = "0.4.2-integration";
+static const char *VERSION = "0.4.3-integration";
 Cam camera;
 VerifiedRing ring;
 BLEServer *server;
@@ -59,6 +60,12 @@ String deviceID;
 camera_fb_t *activeFrame = nullptr;
 size_t frameOffset = 0;
 uint32_t frameStarted = 0, lastChunk = 0;
+bool imageEnqueued = false;
+class ImageCallbacks : public BLECharacteristicCallbacks {
+  void onStatus(BLECharacteristic*, Status status, uint32_t) override {
+    imageEnqueued = status == Status::SUCCESS_NOTIFY;
+  }
+};
 String activeCaptureID;
 struct Command { char text[181]; };
 
@@ -131,10 +138,11 @@ uint32_t checksum(const uint8_t *data, size_t len) {
   return ~crc;
 }
 void little32(uint8_t *data, uint32_t value) { for (int i=0; i<4; ++i) data[i] = value >> (8*i); }
-void takeFrame(const String &id) {
+void takeFrame(const String &id, bool preview) {
   if (activeFrame) { errorReply(id,"camera_busy"); return; }
   if (!camera.ok) { errorReply(id,"camera_unavailable"); return; }
   if (!imageSubscription->getNotifications()) { errorReply(id,"image_not_subscribed"); return; }
+  if (!camera.setPreview(preview)) { errorReply(id,"camera_mode_failed"); return; }
   camera_fb_t *fb = esp_camera_fb_get();
   if (!fb) { errorReply(id,"capture_failed"); return; }
   if (fb->len > 200000) { esp_camera_fb_return(fb); errorReply(id,"image_too_large"); return; }
@@ -143,10 +151,12 @@ void takeFrame(const String &id) {
   begin["id"] = id; begin["type"] = "frame"; begin["frame"] = frame;
   begin["size"] = fb->len; begin["crc"] = checksum(fb->buf,fb->len);
   begin["w"] = fb->width; begin["h"] = fb->height;
+  int64_t age = (esp_timer_get_time() - (int64_t(fb->timestamp.tv_sec)*1000000 + fb->timestamp.tv_usec))/1000;
+  begin["age_ms"] = max(int64_t(0), age);
   reply(begin);
   // 14-byte header: version,type,frameID,offset,total; each integer little endian.
   // Phone assembles out-of-order/repeated offsets and validates the complete CRC32.
-  const size_t packetSize = min(size_t(182), size_t(server->getPeerMTU(server->getConnId()) - 3));
+  const size_t packetSize = min(size_t(244), size_t(server->getPeerMTU(server->getConnId()) - 3));
   if (packetSize <= 14) { esp_camera_fb_return(fb); errorReply(id,"mtu_too_small"); return; }
   activeFrame=fb; frameOffset=0; frameStarted=millis(); lastChunk=0; activeCaptureID=id;
 }
@@ -158,15 +168,17 @@ void frameTick() {
     if (linked) errorReply(activeCaptureID,"image_timeout");
     return;
   }
-  if (millis()-lastChunk<8) return;
+  if (millis()-lastChunk<1) return;
   lastChunk=millis();
-  const size_t packetSize=min(size_t(182),size_t(server->getPeerMTU(server->getConnId())-3));
+  const size_t packetSize=min(size_t(244),size_t(server->getPeerMTU(server->getConnId())-3));
   if (packetSize<=14) return;
-  uint8_t packet[182]; packet[0]=1; packet[1]=0x20;
+  uint8_t packet[244]; packet[0]=1; packet[1]=0x20;
   little32(packet+2,frameCounter); little32(packet+6,frameOffset); little32(packet+10,activeFrame->len);
   const size_t count=min(packetSize-14,activeFrame->len-frameOffset);
   memcpy(packet+14,activeFrame->buf+frameOffset,count);
-  imageChar->setValue(packet,count+14); imageChar->notify(); frameOffset+=count;
+  imageEnqueued=false; imageChar->setValue(packet,count+14); imageChar->notify();
+  if (!imageEnqueued) return; // Retry the same offset under backpressure, never skip bytes.
+  frameOffset+=count;
   if (frameOffset==activeFrame->len) { esp_camera_fb_return(activeFrame); activeFrame=nullptr; }
 }
 void handle(const String &text) {
@@ -208,7 +220,7 @@ void handle(const String &text) {
     String event=doc["event"] | "";
     for (auto &bite:pendingBites) if (event==bite.event) { bite.event[0]=0; saveBite(&bite-pendingBites); break; }
     lastEventSend=0;
-  } else if (op=="capture") takeFrame(id);
+  } else if (op=="capture") takeFrame(id, doc["preview"] | false);
   else errorReply(id,"unsupported_command");
 }
 class ControlCallbacks : public BLECharacteristicCallbacks {
@@ -221,11 +233,15 @@ class ControlCallbacks : public BLECharacteristicCallbacks {
 };
 class ServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer*) override { linked = true; }
+  void onConnect(BLEServer *s, esp_ble_gatts_cb_param_t *param) override {
+    // Request 15–30 ms; the central chooses the actual interval.
+    s->updateConnParams(param->connect.remote_bda,12,24,0,400);
+  }
   void onDisconnect(BLEServer*) override { linked = false; advertiseAgain = true; }
 };
 void setup() {
   Serial.begin(115200); delay(400);
-  Serial.println("NOMI01 integration 0.4.2; physical button enabled; no audio/load/IMU/contact");
+  Serial.println("NOMI01 integration 0.4.3; fast preview; physical button enabled; no audio/load/IMU/contact");
   rtc_gpio_deinit(GPIO_NUM_1); pinMode(1,INPUT_PULLUP); pinMode(2,OUTPUT);
   bool ledReady=ring.begin(); ring.setBrightness(46); ring.clear(); ledReady=ring.show()&&ledReady;
   Serial.printf("[led] GPIO4 RMT initialized and off frame transmitted: %s\n",ledReady?"OK":"FAILED");
@@ -249,12 +265,13 @@ void setup() {
   camera.begin();
   char identity[17]; snprintf(identity,sizeof(identity),"%012llX",(unsigned long long)ESP.getEfuseMac()); deviceID = identity;
   commands = xQueueCreate(8,sizeof(Command));
-  BLEDevice::init("NOMI01"); BLEDevice::setMTU(185);
+  BLEDevice::init("NOMI01"); BLEDevice::setMTU(247);
   server = BLEDevice::createServer(); server->setCallbacks(new ServerCallbacks());
   BLEService *service = server->createService(SERVICE);
   controlChar = service->createCharacteristic(CONTROL,BLECharacteristic::PROPERTY_WRITE|BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ);
   controlSubscription = new BLE2902(); controlChar->addDescriptor(controlSubscription); controlChar->setCallbacks(new ControlCallbacks());
   imageChar = service->createCharacteristic(IMAGE,BLECharacteristic::PROPERTY_NOTIFY);
+  imageChar->setCallbacks(new ImageCallbacks());
   imageSubscription = new BLE2902(); imageChar->addDescriptor(imageSubscription);
   infoChar = service->createCharacteristic(INFO,BLECharacteristic::PROPERTY_READ);
   eventChar = service->createCharacteristic(EVENTS,BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ);
@@ -282,7 +299,7 @@ void loop() {
   }
   buttonTick(); eventTick();
   Command item;
-  if (xQueueReceive(commands,&item,pdMS_TO_TICKS(5))==pdTRUE) handle(String(item.text));
+  if (xQueueReceive(commands,&item,pdMS_TO_TICKS(activeFrame ? 1 : 5))==pdTRUE) handle(String(item.text));
   frameTick();
   buttonTick(); eventTick();
   // Same documented JSON protocol is available locally for bench verification.

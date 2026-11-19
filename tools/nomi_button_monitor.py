@@ -29,7 +29,7 @@ with a.output.open('x') as log:
                 log.write(json.dumps({'received':time.time(),'line':line}) + '\n'); log.flush()
                 try: data = json.loads(line)
                 except ValueError: data = {}
-                if data.get('fw') == '0.4.2-integration' and data.get('protocol') == 'nomi1': verified = True
+                if data.get('fw') in ('0.4.2-integration', '0.4.3-integration') and data.get('protocol') == 'nomi1': verified = True
                 if data.get('type') == 'button_status' or line.startswith('[button]'): print(line, flush=True)
             if verified and time.monotonic() >= next_status:
                 msg = {'v':1,'id':str(uuid.uuid4()),'op':'button_status'}

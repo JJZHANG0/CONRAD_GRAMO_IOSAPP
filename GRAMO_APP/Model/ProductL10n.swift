@@ -3,6 +3,7 @@ import Foundation
 /// Consumer copy is separate from stored records and wire protocol strings.
 extension L10n {
     static let productEnglish: [String: String] = [
+        "勺载画面自动刷新": "Refresh spoon camera automatically",
         "口已记录，尚无热量估算": "bites saved · calories unavailable",
         "开启本餐，让镜头看向食物。吃完短按，菜名自动关联，无需逐口填写。": "Start a meal and point the camera at your food. Press after each bite; dish names are linked automatically.",
         "短按即记录，无需逐口填写": "Press to record. No per-bite forms.",

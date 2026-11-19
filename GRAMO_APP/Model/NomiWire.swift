@@ -28,7 +28,8 @@ struct NomiInfo: Decodable {
     var imu: Bool
     var contact: Bool
     var button: Bool?
-    var supported: Bool { v == 1 && `protocol` == "nomi1" && ["0.3.0-integration", "0.4.0-integration", "0.4.1-integration", "0.4.2-integration"].contains(fw) }
+    var supported: Bool { v == 1 && `protocol` == "nomi1" && ["0.3.0-integration", "0.4.0-integration", "0.4.1-integration", "0.4.2-integration", "0.4.3-integration"].contains(fw) }
+    var fastPreview: Bool { supported && fw == "0.4.3-integration" }
 }
 struct NomiButtonEvent: Codable {
     var v: Int
@@ -54,6 +55,14 @@ struct SpoonCameraFrame {
     var data: Data
     var timestamp: Date
     var deviceID: String
+}
+enum NomiCameraTiming {
+    static func capturedAt(requestedAt: Date, metadataReceivedAt: Date, ageMilliseconds: Double?) throws -> Date {
+        // Legacy firmware has no sensor timestamp: request time is a documented approximation.
+        guard let age = ageMilliseconds else { return requestedAt }
+        guard age.isFinite, (0...10_000).contains(age) else { throw NomiImageError.invalid }
+        return metadataReceivedAt.addingTimeInterval(-age / 1000)
+    }
 }
 enum NomiImageError: Error { case invalid, conflict, checksum, expired }
 struct NomiImageAssembler {

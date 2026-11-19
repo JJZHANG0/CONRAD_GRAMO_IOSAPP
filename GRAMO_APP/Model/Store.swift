@@ -23,6 +23,7 @@ final class AppStore {
     var todayISO = ZWFormat.formatISODate(Date())
     var nomiCapabilities: NomiInfo?
     var spoonFrame: SpoonCameraFrame?
+    var spoonPreviewImage: UIImage?
     var cameraBusy = false
     var cameraMessage = "勺载相机尚未就绪"
     var cameraStatus = "尚未收到勺载画面"
@@ -486,6 +487,7 @@ final class AppStore {
     @discardableResult func receiveFrame(_ frame: SpoonCameraFrame) -> Bool {
         guard let decoded = UIImage(data: frame.data), decoded.size.width > 0 else { return false }
         spoonFrame = frame
+        spoonPreviewImage = decoded
         recentFrames.append(frame)
         recentFrames = Array(recentFrames.filter { frame.timestamp.timeIntervalSince($0.timestamp) <= 20 }.suffix(12))
         queueDishRecognition(frame)
@@ -746,7 +748,7 @@ final class AppStore {
         defaults = enabled ? (simulationDefaults ?? UserDefaults(suiteName: simulationDomain)!) : productionDefaults
         state = Logic.dropLiveLink(Self.load(defaults) ?? Logic.createInitial(Date()))
         bag = Self.loadBag(defaults)
-        nearby = []; deviceReady = false; nomiCapabilities = nil; spoonFrame = nil; recentFrames = []
+        nearby = []; deviceReady = false; nomiCapabilities = nil; spoonFrame = nil; spoonPreviewImage = nil; recentFrames = []
         previewOwners = []; led = LEDSync(); toast = nil
         if enabled { mockDevice = MockSpoonDevice(store: self, defaults: defaults) }
         persist()

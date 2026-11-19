@@ -7,12 +7,12 @@ struct SpoonPreview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(store.t(store.deviceReady ? "设备已连接" : "设备未连接")).font(.footnote)
-            if let frame = store.spoonFrame, let image = UIImage(data: frame.data) {
+            if let image = store.spoonPreviewImage {
                 Image(uiImage: image).resizable().scaledToFit().frame(maxHeight: 220)
                     .accessibilityIdentifier("spoon-preview-image")
             }
             Text(store.t(store.cameraStatus)).font(.caption).accessibilityIdentifier("spoon-camera-status")
-            Toggle(store.t("勺载画面间隔刷新（约 2 秒）"), isOn: Binding(
+            Toggle(store.t("勺载画面自动刷新"), isOn: Binding(
                 get: { running || store.activeIntegrationMealID != nil },
                 set: { running = $0 }
             )).font(.footnote).disabled(store.activeIntegrationMealID != nil)

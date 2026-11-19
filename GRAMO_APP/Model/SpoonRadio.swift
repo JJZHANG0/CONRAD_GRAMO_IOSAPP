@@ -25,6 +25,13 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
     private var captureTimeout: Task<Void, Never>?
     private var imageAssembler: NomiImageAssembler?
     private var lastCaptureAttempt = Date.distantPast
+    private var frameCapturedAt: Date?
+    private var nextCapture: Task<Void, Never>?
+    private var pendingStill = false
+    private var captureIsPreview = false
+    private var lastFrameReceivedAt: Date?
+    private var cameraMetrics: [[String: Any]] = []
+    private var lastCameraDiagnostic = Date.distantPast
     private var session = MealSessionSync()
     private(set) var diagnostics = "尚未发现 GATT"
     var deviceID: String { connected?.identifier.uuidString ?? "unknown" }
@@ -222,6 +229,7 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
     private func resetNomi() {
         controlCharacteristic = nil; nomiInfo = nil; helloID = nil; handshaken = false
         captureID = nil; imageAssembler = nil; captureTimeout?.cancel()
+        nextCapture?.cancel(); nextCapture = nil; pendingStill = false; frameCapturedAt = nil; lastFrameReceivedAt = nil
         session.reset(); store?.buttonSessionReady = false
         store?.nomiCapabilities = nil; store?.cameraBusy = false
         store?.buttonMessage = "实体按钮未连接 / 未同步"
@@ -243,23 +251,28 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
         guard canControlLED else { throw NomiImageError.invalid }
         try command("led", id: commandID, extra: ["color": color.rawValue])
     }
-    func captureFrame() {
-        guard canCapture, captureID == nil else { return }
+    func captureFrame(preview: Bool = false) {
+        guard canCapture else { return }
+        guard captureID == nil else { if !preview { pendingStill = true }; return }
+        nextCapture?.cancel(); nextCapture = nil
         lastCaptureAttempt = Date()
+        captureIsPreview = preview && nomiInfo?.fastPreview == true
+        frameCapturedAt = lastCaptureAttempt
         let id = UUID(); captureID = id; imageAssembler = nil
         store?.cameraBusy = true; store?.cameraMessage = "正在接收勺载关键帧…"
-        do { try command("capture", id: id) }
+        do { try command("capture", id: id, extra: captureIsPreview ? ["preview": true] : [:]) }
         catch { finishCapture(error: "拍照命令发送失败"); return }
         captureTimeout?.cancel()
+        let deadline = captureIsPreview ? 5 : 30
         captureTimeout = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(30))
+            try? await Task.sleep(for: .seconds(deadline))
             guard !Task.isCancelled, self?.captureID == id else { return }
             self?.finishCapture(error: "关键帧接收超时，请重新拍摄；未使用不完整图片。")
         }
     }
     func tick(now: Date, preview: Bool) {
         syncSession(meal: store?.activeIntegrationMealID, now: now)
-        if preview && canCapture && captureID == nil && now.timeIntervalSince(lastCaptureAttempt) >= 2 { captureFrame() }
+        if preview && canCapture && captureID == nil && nextCapture == nil && now.timeIntervalSince(lastCaptureAttempt) >= 2 { captureFrame(preview: true) }
     }
     func syncSession(meal: String?, force: Bool = false, now: Date = Date()) {
         guard handshaken, nomiInfo?.button == true, subscribed.contains(NomiWire.events) else { return }
@@ -290,7 +303,10 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
         } else if type == "frame", id == captureID,
                   let frame = value["frame"] as? UInt32, let size = value["size"] as? Int, let crc = value["crc"] as? UInt32 {
             if imageAssembler?.frameID == frame { return }
-            do { imageAssembler = try NomiImageAssembler(frameID: frame, size: size, crc: crc) }
+            do {
+                frameCapturedAt = try NomiCameraTiming.capturedAt(requestedAt: lastCaptureAttempt, metadataReceivedAt: Date(), ageMilliseconds: value["age_ms"] as? Double)
+                imageAssembler = try NomiImageAssembler(frameID: frame, size: size, crc: crc)
+            }
             catch { finishCapture(error: "相机帧头无效") }
         } else if type == "error" {
             let message = "设备回应：\(value["error"] as? String ?? "unknown")"
@@ -301,15 +317,43 @@ final class SpoonRadio: NSObject, @preconcurrency CBCentralManagerDelegate, @pre
         guard let id = captureID, imageAssembler != nil else { return }
         do {
             if let complete = try imageAssembler?.append(data) {
-                let frame = SpoonCameraFrame(id: id, data: complete, timestamp: Date(), deviceID: nomiInfo?.device ?? deviceID)
-                finishCapture(error: store?.receiveFrame(frame) == true ? nil : "图片无法解码，请重新拍摄")
+                let receivedAt = Date()
+                let frame = SpoonCameraFrame(id: id, data: complete, timestamp: frameCapturedAt ?? lastCaptureAttempt, deviceID: nomiInfo?.device ?? deviceID)
+                let decodeStart = Date()
+                let accepted = store?.receiveFrame(frame) == true
+                #if DEBUG
+                cameraMetrics.append(["firmware": nomiInfo?.fw ?? "", "preview": captureIsPreview, "bytes": complete.count,
+                    "requestToReceiveMs": receivedAt.timeIntervalSince(lastCaptureAttempt)*1000,
+                    "approximateFrameAgeMs": receivedAt.timeIntervalSince(frame.timestamp)*1000,
+                    "frameIntervalMs": lastFrameReceivedAt.map { receivedAt.timeIntervalSince($0)*1000 } ?? 0,
+                    "decodeAndStoreMs": Date().timeIntervalSince(decodeStart)*1000, "accepted": accepted, "receivedAt": receivedAt.ISO8601Format()])
+                cameraMetrics = Array(cameraMetrics.suffix(30))
+                if let data = try? JSONSerialization.data(withJSONObject: cameraMetrics, options: [.prettyPrinted, .sortedKeys]), let root = store?.dataDirectory {
+                    try? data.write(to: root.appendingPathComponent("CameraPerformance.json"), options: .atomic)
+                }
+                #endif
+                lastFrameReceivedAt = receivedAt
+                finishCapture(error: accepted ? nil : "图片无法解码，请重新拍摄")
             }
         } catch { finishCapture(error: "相机数据校验失败，请重新拍摄。") }
     }
     private func finishCapture(error: String?) {
         captureTimeout?.cancel(); captureID = nil; imageAssembler = nil
         store?.cameraBusy = false; store?.cameraMessage = error ?? "已收到并校验真实勺载相机关键帧"
-        store?.recordHardwareEvidence()
+        if Date().timeIntervalSince(lastCameraDiagnostic) >= 3 {
+            lastCameraDiagnostic = Date(); store?.recordHardwareEvidence()
+        }
+        if nomiInfo?.fastPreview == true || pendingStill {
+            nextCapture?.cancel()
+            nextCapture = Task { [weak self] in
+                try? await Task.sleep(for: .milliseconds(error == nil ? 100 : 1000))
+                guard let self, !Task.isCancelled else { return }
+                self.nextCapture = nil
+                guard self.store?.appActive == true, self.canCapture else { return }
+                if self.pendingStill { self.pendingStill = false; self.captureFrame() }
+                else if self.nomiInfo?.fastPreview == true && (self.store?.previewOwners.isEmpty == false || self.store?.activeIntegrationMealID != nil) { self.captureFrame(preview: true) }
+            }
+        }
     }
     private func apply(_ state: CBManagerState) {
         switch state {
